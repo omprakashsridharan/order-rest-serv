@@ -23,8 +23,12 @@ async fn main() {
         };
     };
 
+    let user_handler = get(proxy(String::from("user"))).post(proxy(String::from("user")));
+    let auth_handler = get(proxy(String::from("auth"))).post(proxy(String::from("auth")));
+
     let app = Router::new()
-        .route("/user/*path", get(proxy(String::from("user"))))
+        .route("/user/*path", user_handler)
+        .route("/auth/*path", auth_handler)
         .layer(Extension(client));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
