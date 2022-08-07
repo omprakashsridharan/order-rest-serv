@@ -1,0 +1,61 @@
+version: '3.9'
+services:
+  authdb:
+    image: mysql/mysql-server:8.0.23
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    env_file: ./.env
+    container_name: authdb
+    environment:
+      MYSQL_DATABASE: $AUTH_DB_NAME
+      MYSQL_USER: $AUTH_DB_USER
+      MYSQL_PASSWORD: $AUTH_DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $AUTH_DB_ROOT_PASSWORD
+      MYSQL_ROOT_HOST: "%"
+    ports:
+      - 3306:3306
+    expose:
+      - 3306
+    volumes:
+      - auth-db:/var/lib/mysql
+  
+  authserv:
+    image: authserv
+    build:
+      context: .
+      dockerfile: ./authserv.Dockerfile
+    depends_on:
+      - mysqldb
+    restart: on-failure
+    env_file: ./.env
+    command: sh -c "/usr/local/bin/wait && /usr/local/bin/authserv"
+    ports:
+      - 8001:8001
+    expose:
+      - 8001
+    environment:
+      - DATABASE_URL=mysql://$AUTH_DB_USER:$AUTH_DB_PASSWORD@authdb:3306/$AUTH_DB_NAME
+      - WAIT_HOSTS=authdb:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+    stdin_open: true
+    tty: true
+
+  gateway:
+    depends_on:
+      - authserv
+    image: gateway
+    build:
+      context: .
+      dockerfile: ./gateway.Dockerfile
+    restart: on-failure
+    env_file: ./.env
+    ports:
+      - 8000:8000
+    expose:
+      - 8000
+    stdin_open: true
+    tty: true
+volumes:
+  auth-db:
