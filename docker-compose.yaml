@@ -34,7 +34,7 @@ services:
     expose:
       - 8001
     environment:
-      - DATABASE_URL=mysql://$AUTH_DB_USER:$AUTH_DB_PASSWORD@authdb:3306/$AUTH_DB_NAME
+      - DATABASE_URL=$AUTH_DATABASE_URL
       - WAIT_HOSTS=authdb:3306
       - WAIT_HOSTS_TIMEOUT=300
       - WAIT_SLEEP_INTERVAL=30

@@ -1,4 +1,7 @@
+mod entity;
 mod migration;
+mod repository;
+mod utils;
 use crate::migration::{Migrator, MigratorTrait};
 use std::env;
 
