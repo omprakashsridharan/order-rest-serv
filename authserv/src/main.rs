@@ -24,8 +24,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/auth/login", post(handler::login::handle))
         .layer(Extension(auth_repository));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
-    println!("reverse proxy listening on {}", addr);
+    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
+    println!("auth serv listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

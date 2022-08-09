@@ -22,14 +22,14 @@ async fn main() {
             handler(client, req)
         };
     };
-    let auth_handler = get(proxy(String::from("auth"))).post(proxy(String::from("auth")));
+    let auth_handler = get(proxy(String::from("authserv"))).post(proxy(String::from("authserv")));
 
     let app = Router::new()
         .route("/user/*path", auth_handler.clone())
         .route("/auth/*path", auth_handler.clone())
         .layer(Extension(client));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
     println!("reverse proxy listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

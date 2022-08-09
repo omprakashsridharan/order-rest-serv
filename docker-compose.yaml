@@ -21,6 +21,7 @@ services:
   
   authserv:
     image: authserv
+    container_name: authserv
     build:
       context: .
       dockerfile: ./authserv.Dockerfile
@@ -30,15 +31,16 @@ services:
     env_file: ./.env
     command: sh -c "/usr/local/bin/wait && /usr/local/bin/authserv"
     ports:
-      - 8001:8001
+      - 8001:80
     expose:
       - 8001
     environment:
       - DATABASE_URL=$AUTH_DATABASE_URL
       - WAIT_HOSTS=authdb:3306
       - WAIT_HOSTS_TIMEOUT=300
-      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_SLEEP_INTERVAL=10
       - WAIT_HOST_CONNECT_TIMEOUT=30
+      - SECRET=$SECRET
     stdin_open: true
     tty: true
 
@@ -46,13 +48,14 @@ services:
     depends_on:
       - authserv
     image: gateway
+    container_name: gateway
     build:
       context: .
       dockerfile: ./gateway.Dockerfile
     restart: on-failure
     env_file: ./.env
     ports:
-      - 8000:8000
+      - 8000:80
     expose:
       - 8000
     stdin_open: true
