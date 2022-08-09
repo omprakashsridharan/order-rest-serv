@@ -1,8 +1,10 @@
+use crate::error::Result;
 use hmac::{Hmac, Mac};
 use jwt::SignWithKey;
 use sha2::Sha256;
 use std::collections::BTreeMap;
 use std::env;
+use validator::Validate;
 
 pub struct TokenData {
     pub email: String,
@@ -20,4 +22,8 @@ pub fn generate_jwt(token_data: TokenData) -> String {
     claims.insert("role", &token_data.role);
     let token_str = claims.sign_with_key(&key).unwrap();
     return token_str;
+}
+
+pub fn validate_payload<T: Validate>(payload: &T) -> Result<()> {
+    Ok(payload.validate()?)
 }

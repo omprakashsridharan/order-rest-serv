@@ -1,9 +1,17 @@
+mod dto;
 mod entity;
+mod error;
+mod handler;
 mod migration;
 mod repository;
 mod utils;
+
 use crate::migration::{Migrator, MigratorTrait};
+use crate::repository::auth::AuthRepository;
+use axum::routing::post;
+use axum::{Extension, Router};
 use std::env;
+use std::net::SocketAddr;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -11,5 +19,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("DB url {}", db_url.clone());
     let connection = sea_orm::Database::connect(&db_url).await?;
     Migrator::up(&connection, None).await?;
+    let auth_repository = AuthRepository::new(connection.clone());
+    let app = Router::new()
+        .route("/auth/login", post(handler::login::handle))
+        .layer(Extension(auth_repository));
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8000));
+    println!("reverse proxy listening on {}", addr);
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
     Ok(())
 }
