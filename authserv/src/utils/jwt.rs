@@ -1,29 +1,51 @@
 use crate::error::Result;
-use hmac::{Hmac, Mac};
-use jwt::SignWithKey;
-use sha2::Sha256;
-use std::collections::BTreeMap;
-use std::env;
+use chrono::{Duration, Utc};
+use common::constants::JWT_SECRET;
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
+use serde::{Deserialize, Serialize};
 use validator::Validate;
-
-pub struct TokenData {
-    pub email: String,
-    pub user_id: String,
-    pub role: String,
-    pub token: Option<String>,
-}
-
-pub fn generate_jwt(token_data: TokenData) -> String {
-    let secret = env::var("SECRET").expect("SECRET env missing");
-    let key: Hmac<Sha256> = Hmac::new_from_slice(secret.as_bytes()).unwrap();
-    let mut claims = BTreeMap::new();
-    claims.insert("sub", &token_data.email);
-    claims.insert("user_id", &token_data.user_id);
-    claims.insert("role", &token_data.role);
-    let token_str = claims.sign_with_key(&key).unwrap();
-    return token_str;
-}
 
 pub fn validate_payload<T: Validate>(payload: &T) -> Result<()> {
     Ok(payload.validate()?)
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Claims {
+    pub sub: String,
+    pub exp: i64,
+    pub iat: i64,
+    pub user_id: i32,
+    pub role: String,
+}
+
+impl Claims {
+    pub fn new(email: String, user_id: i32, role: String) -> Self {
+        let iat = Utc::now();
+        let exp = iat + Duration::hours(24);
+
+        Self {
+            sub: email,
+            iat: iat.timestamp(),
+            exp: exp.timestamp(),
+            user_id,
+            role,
+        }
+    }
+}
+
+pub fn sign(email: String, user_id: i32, role: String) -> Result<String> {
+    Ok(jsonwebtoken::encode(
+        &Header::default(),
+        &Claims::new(email, user_id, role),
+        &EncodingKey::from_secret(JWT_SECRET.as_bytes()),
+    )?)
+}
+
+pub fn verify(token: &str) -> Result<Claims> {
+    Ok(jsonwebtoken::decode(
+        token,
+        &DecodingKey::from_secret(JWT_SECRET.as_bytes()),
+        &Validation::default(),
+    )
+    .map(|data| data.claims)?)
 }

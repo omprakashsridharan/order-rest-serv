@@ -24,6 +24,8 @@ pub enum Error {
     DuplicateUserEmail,
     #[error("name is already taken")]
     DuplicateUserName,
+    #[error("error while signing up")]
+    SignupError,
 }
 pub type Result<T> = std::result::Result<T, Error>;
 

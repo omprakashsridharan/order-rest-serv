@@ -20,8 +20,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let connection = sea_orm::Database::connect(&db_url).await?;
     Migrator::up(&connection, None).await?;
     let auth_repository = AuthRepository::new(connection.clone());
+
     let app = Router::new()
         .route("/auth/login", post(handler::login::handle))
+        .route("/auth/signup", post(handler::signup::handle))
         .layer(Extension(auth_repository));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 80));

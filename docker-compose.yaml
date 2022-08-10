@@ -26,7 +26,7 @@ services:
       context: .
       dockerfile: ./authserv.Dockerfile
     depends_on:
-      - mysqldb
+      - authdb
     restart: on-failure
     env_file: ./.env
     command: sh -c "/usr/local/bin/wait && /usr/local/bin/authserv"

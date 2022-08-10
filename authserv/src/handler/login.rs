@@ -1,11 +1,12 @@
 use axum::{Extension, Json};
 use common::constants::BEARER;
+use tracing::error;
 
 use crate::{
     dto::{LoginInput, TokenPayload},
     error::{ApiResult, Error},
     repository::auth::AuthRepository,
-    utils::jwt::validate_payload,
+    utils::jwt::{sign, validate_payload},
 };
 
 pub async fn handle(
@@ -13,10 +14,14 @@ pub async fn handle(
     Extension(auth_repository): Extension<AuthRepository>,
 ) -> ApiResult<Json<TokenPayload>> {
     validate_payload(&input)?;
-    let token = auth_repository
+    let user_model = auth_repository
         .signin(input.email, input.password)
         .await
-        .map_err(|_| Error::WrongCredentials)?;
+        .map_err(|e| {
+            error!("Error while logging in {}", e);
+            Error::WrongCredentials
+        })?;
+    let token = sign(user_model.email, user_model.id, user_model.role)?;
     Ok(Json(TokenPayload {
         access_token: token,
         token_type: BEARER.to_string(),
