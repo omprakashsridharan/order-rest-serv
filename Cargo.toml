@@ -1,6 +1,41 @@
-[workspace]
-members = [
-  "gateway",
-  "authserv",
-  "common"
+[package]
+name = "orderserv"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "lib"
+path = "./lib/lib.rs"
+
+[[bin]]
+name = "gateway"
+path = "./bin/gateway/main.rs"
+
+[[bin]]
+name = "authserv"
+path = "./bin/authserv/main.rs"
+
+[dependencies]
+axum = "0.5.13"
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
+lazy_static = "1.4.0"
+sea-orm = { version = "^0", features = [ "sqlx-mysql", "runtime-tokio-rustls", "macros", "with-chrono" ] }
+async-trait = "0.1.57"
+tracing = "0.1.36"
+tracing-subscriber = "0.3.15"
+serde = {version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0.32"
+bcrypt = "0.13.0"
+jsonwebtoken = "8.1.1"
+validator = { version = "0.16", features = ["derive"] }
+chrono = "0.4.21"
+dotenv = "0.15.0"
+
+[dependencies.sea-orm-migration]
+version = "^0.9.0"
+features = [
+  "runtime-tokio-rustls",  # `ASYNC_RUNTIME` featrure
+  "sqlx-mysql",         # `DATABASE_DRIVER` feature
 ]

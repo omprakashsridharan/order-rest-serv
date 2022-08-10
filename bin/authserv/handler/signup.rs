@@ -5,7 +5,7 @@ use crate::{
     utils::jwt::{sign, validate_payload},
 };
 use axum::{http::StatusCode, Extension, Json};
-use common::constants::BEARER;
+use lib::constants::BEARER;
 use tracing::error;
 
 pub async fn handle(

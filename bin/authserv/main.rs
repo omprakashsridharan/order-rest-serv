@@ -12,11 +12,12 @@ use axum::routing::post;
 use axum::{Extension, Router};
 use std::env;
 use std::net::SocketAddr;
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    println!("DB url {}", db_url.clone());
+    info!("DB url {}", db_url.clone());
     let connection = sea_orm::Database::connect(&db_url).await?;
     Migrator::up(&connection, None).await?;
     let auth_repository = AuthRepository::new(connection.clone());
