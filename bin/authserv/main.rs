@@ -1,15 +1,8 @@
-mod dto;
-mod entity;
-mod error;
-mod handler;
-mod migration;
-mod repository;
-mod utils;
-
-use crate::migration::{Migrator, MigratorTrait};
-use crate::repository::auth::AuthRepository;
 use axum::routing::post;
 use axum::{Extension, Router};
+use lib::handler::{login, signup};
+use lib::migration::{Migrator, MigratorTrait};
+use lib::repository::auth::AuthRepository;
 use std::env;
 use std::net::SocketAddr;
 use tracing::info;
@@ -23,8 +16,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let auth_repository = AuthRepository::new(connection.clone());
 
     let app = Router::new()
-        .route("/auth/login", post(handler::login::handle))
-        .route("/auth/signup", post(handler::signup::handle))
+        .route("/auth/login", post(login::handle))
+        .route("/auth/signup", post(signup::handle))
         .layer(Extension(auth_repository));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 80));

@@ -1,7 +1,7 @@
+use crate::constants::JWT_SECRET;
 use crate::error::Result;
 use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
-use lib::constants::JWT_SECRET;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
 

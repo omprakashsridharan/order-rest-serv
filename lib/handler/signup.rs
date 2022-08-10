@@ -1,3 +1,4 @@
+use crate::constants::BEARER;
 use crate::{
     dto::{RegisterInput, TokenPayload},
     error::{ApiResult, Error},
@@ -5,7 +6,6 @@ use crate::{
     utils::jwt::{sign, validate_payload},
 };
 use axum::{http::StatusCode, Extension, Json};
-use lib::constants::BEARER;
 use tracing::error;
 
 pub async fn handle(
