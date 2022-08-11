@@ -1,0 +1,11 @@
+[jwt]
+secret="secret"
+
+[gateway]
+port = 8000
+
+[auth]
+db_url="mysql://auth:password@authdb:3306/auth"
+
+[log]
+level = "info"
