@@ -14,7 +14,7 @@ services:
       MYSQL_ROOT_HOST: "%"
       RUN_MODE: "Production"
     ports:
-      - 3306:3306
+      - 3307:3306
     expose:
       - 3306
     volumes:
@@ -37,6 +37,10 @@ services:
       - 8001
     environment:
       - RUN_MODE=Production
+      - WAIT_HOSTS=authdb:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
     stdin_open: true
     tty: true
 
@@ -50,6 +54,8 @@ services:
       dockerfile: ./gateway.Dockerfile
     restart: on-failure
     env_file: ./.env
+    environment:
+      - RUN_MODE=Production
     ports:
       - 8000:80
     expose:

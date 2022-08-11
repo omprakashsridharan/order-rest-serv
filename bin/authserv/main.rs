@@ -5,11 +5,10 @@ use lib::migration::{Migrator, MigratorTrait};
 use lib::repository::auth::AuthRepository;
 use lib::settings;
 use std::net::SocketAddr;
-use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    info!("DB url {}", settings::CONFIG.clone().auth.db_url.clone());
+    println!("DB url {}", settings::CONFIG.clone().auth.db_url.clone());
     let connection = sea_orm::Database::connect(&settings::CONFIG.clone().auth.db_url).await?;
     Migrator::up(&connection, None).await?;
     let auth_repository = AuthRepository::new(connection.clone());

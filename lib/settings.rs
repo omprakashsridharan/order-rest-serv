@@ -1,6 +1,6 @@
 use std::{env, fmt};
 
-use config::{Config, ConfigError, Environment, File};
+use config::{Config, ConfigError, Environment, File, FileFormat};
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -15,7 +15,7 @@ pub struct Jwt {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Gateway {
-    pub port: i32,
+    pub port: u16,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -58,14 +58,24 @@ impl From<&str> for ENV {
 
 impl Settings {
     pub fn new() -> Result<Self, ConfigError> {
-        let run_mode = env::var("RUN_MODE").unwrap_or_else(|_| "Development".into());
+        let run_mode: ENV = env::var("RUN_MODE")
+            .unwrap_or_else(|_| "Development".into())
+            .as_str()
+            .into();
+        println!("Run mode {}", run_mode);
+        let file = match run_mode.clone() {
+            ENV::Development => {
+                File::from_str(include_str!("config/Development.toml"), FileFormat::Toml)
+            }
+            ENV::Production => {
+                File::from_str(include_str!("config/Production.toml"), FileFormat::Toml)
+            }
+        };
 
         let s = Config::builder()
-            .add_source(File::with_name("config/Default"))
-            .add_source(File::with_name(&format!("config/{}", run_mode)).required(false))
-            .add_source(File::with_name("config/Local").required(false))
+            .add_source(file)
             .add_source(Environment::with_prefix("order"))
-            .set_override("env", run_mode.clone())?
+            .set_override("env", run_mode.to_string())?
             .build()?;
         s.try_deserialize()
     }

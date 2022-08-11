@@ -17,6 +17,7 @@ RUN cargo build --release --bin gateway
 FROM debian:buster-slim AS runtime
 WORKDIR /app
 COPY --from=builder /app/target/release/gateway /usr/local/bin
+COPY ./lib/config /usr/local/bin/config
 ENV WAIT_VERSION 2.7.2
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /usr/local/bin/wait
 RUN chmod +x /usr/local/bin/wait

@@ -5,6 +5,7 @@ use axum::{
     Router,
 };
 use hyper::{client::HttpConnector, Body};
+use lib::settings;
 use std::net::SocketAddr;
 
 type Client = hyper::client::Client<HttpConnector, Body>;
@@ -29,7 +30,7 @@ async fn main() {
         .route("/auth/*path", auth_handler.clone())
         .layer(Extension(client));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
+    let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().gateway.port));
     println!("reverse proxy listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

@@ -1,0 +1,11 @@
+[auth]
+db_url="mysql://root:krishnaOp8@localhost:3306/orderserv"
+
+[log]
+level = "debug"
+
+[jwt]
+secret="secret"
+
+[gateway]
+port = 80

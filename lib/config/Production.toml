@@ -2,7 +2,7 @@
 secret="secret"
 
 [gateway]
-port = 8000
+port = 80
 
 [auth]
 db_url="mysql://auth:password@authdb:3306/auth"
