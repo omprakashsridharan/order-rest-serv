@@ -1,1 +1,0 @@
-sea-orm-cli generate entity --with-serde both -o authserv/src/entity -u mysql://auth:password@localhost:3306/auth

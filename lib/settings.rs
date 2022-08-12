@@ -24,10 +24,16 @@ pub struct Auth {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct Inventory {
+    pub db_url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub jwt: Jwt,
     pub gateway: Gateway,
     pub auth: Auth,
+    pub inventory: Inventory,
     pub log: Log,
     pub env: ENV,
 }

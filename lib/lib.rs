@@ -7,7 +7,6 @@ pub mod entity;
 pub mod enums;
 pub mod error;
 pub mod handler;
-pub mod migration;
 pub mod repository;
 pub mod settings;
 pub mod utils;

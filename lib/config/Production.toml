@@ -7,5 +7,8 @@ port = 80
 [auth]
 db_url="mysql://auth:password@authdb:3306/auth"
 
+[inventory]
+db_url="mysql://inventory:password@inventorydb:3306/inventory"
+
 [log]
 level = "info"

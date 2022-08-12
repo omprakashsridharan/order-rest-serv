@@ -1,5 +1,8 @@
 [auth]
-db_url="mysql://root:krishnaOp8@localhost:3306/orderserv"
+db_url="mysql://root:krishnaOp8@localhost:3306/auth"
+
+[inventory]
+db_url="mysql://root:krishnaOp8@localhost:3306/inventory"
 
 [log]
 level = "debug"

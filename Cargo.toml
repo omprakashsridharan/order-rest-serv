@@ -15,6 +15,10 @@ path = "./bin/gateway/main.rs"
 name = "authserv"
 path = "./bin/authserv/main.rs"
 
+[[bin]]
+name = "inventoryserv"
+path = "./bin/inventoryserv/main.rs"
+
 [dependencies]
 axum = "0.5.13"
 hyper = { version = "0.14", features = ["full"] }
