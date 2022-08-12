@@ -1,12 +1,14 @@
-use crate::migration::{Migrator, MigratorTrait};
 use axum::routing::post;
 use axum::{Extension, Router};
-use lib::handler::{login, signup};
-use lib::repository::auth::AuthRepository;
+use handler::{login, signup};
 use lib::settings;
+use migration::{AuthMigrator as Migrator, MigratorTrait};
+use repository::auth::AuthRepository;
 use std::net::SocketAddr;
 
-mod migration;
+mod entity;
+mod handler;
+mod repository;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

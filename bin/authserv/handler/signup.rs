@@ -1,12 +1,13 @@
-use crate::constants::BEARER;
-use crate::{
+use axum::{http::StatusCode, Extension, Json};
+use lib::constants::BEARER;
+use lib::{
     dto::{RegisterInput, TokenPayload},
     error::{ApiResult, Error},
-    repository::auth::AuthRepository,
     utils::jwt::{sign, validate_payload},
 };
-use axum::{http::StatusCode, Extension, Json};
 use tracing::error;
+
+use crate::repository::auth::AuthRepository;
 
 pub async fn handle(
     Json(input): Json<RegisterInput>,

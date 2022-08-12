@@ -1,30 +1,29 @@
-use crate::migration::{Migrator, MigratorTrait};
-use axum::routing::post;
 use axum::{Extension, Router};
-use lib::handler::{login, signup};
-use lib::repository::auth::AuthRepository;
-use lib::settings;
+use lib::settings::{self};
+use migration::{InventoryhMigrator as Migrator, MigratorTrait};
+use repository::product::ProductRepository;
 use std::net::SocketAddr;
 
-mod migration;
+mod entity;
+mod repository;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("DB url {}", settings::CONFIG.clone().auth.db_url.clone());
-    let connection = sea_orm::Database::connect(&settings::CONFIG.clone().auth.db_url).await?;
+    println!(
+        "DB url {}",
+        settings::CONFIG.clone().inventory.db_url.clone()
+    );
+    let connection = sea_orm::Database::connect(&settings::CONFIG.clone().inventory.db_url).await?;
     Migrator::up(&connection, None).await?;
-    // let inventory_repository = AuthRepository::new(connection.clone());
+    let product_repository = ProductRepository::new(connection.clone());
 
-    // let app = Router::new()
-    //     .route("/auth/login", post(login::handle))
-    //     .route("/auth/signup", post(signup::handle))
-    //     .layer(Extension(inventory_repository));
+    let app = Router::new().layer(Extension(product_repository));
 
-    // let addr = SocketAddr::from(([0, 0, 0, 0], 80));
-    // println!("auth serv listening on {}", addr);
-    // axum::Server::bind(&addr)
-    //     .serve(app.into_make_service())
-    //     .await
-    //     .unwrap();
+    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
+    println!("auth serv listening on {}", addr);
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
     Ok(())
 }

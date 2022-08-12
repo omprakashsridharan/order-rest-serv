@@ -1,8 +1,9 @@
-use db::connection::{DatabaseConnection, DbErr};
-use db::entity::product;
-use db::prelude::*;
+use crate::entity::product;
+use lib::db::connection::{DatabaseConnection, DbErr};
+use lib::db::prelude::*;
 use tracing::{error, info};
 
+#[derive(Clone)]
 pub struct ProductRepository {
     pub db_pool: DatabaseConnection,
 }
