@@ -23,3 +23,10 @@ pub struct RegisterInput {
     pub address: String,
     pub phone: String,
 }
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct AddProductData {
+    pub name: String,
+    pub description: String,
+    pub price: f32,
+}

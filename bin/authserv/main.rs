@@ -22,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/auth/signup", post(signup::handle))
         .layer(Extension(auth_repository));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
+    let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().auth.port));
     println!("auth serv listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

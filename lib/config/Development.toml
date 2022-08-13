@@ -1,7 +1,9 @@
 [auth]
+port=8001
 db_url="mysql://root:krishnaOp8@localhost:3306/auth"
 
 [inventory]
+port=8002
 db_url="mysql://root:krishnaOp8@localhost:3306/inventory"
 
 [log]
@@ -11,4 +13,4 @@ level = "debug"
 secret="secret"
 
 [gateway]
-port = 80
+port = 8000

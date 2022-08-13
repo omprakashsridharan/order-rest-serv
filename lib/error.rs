@@ -26,6 +26,8 @@ pub enum Error {
     DuplicateUserName,
     #[error("error while signing up")]
     SignupError,
+    #[error("error while adding product to the inventory")]
+    AddProductError,
 }
 pub type Result<T> = std::result::Result<T, Error>;
 

@@ -20,11 +20,13 @@ pub struct Gateway {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Auth {
+    pub port: u16,
     pub db_url: String,
 }
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Inventory {
+    pub port: u16,
     pub db_url: String,
 }
 

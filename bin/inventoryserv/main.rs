@@ -1,10 +1,13 @@
-use axum::{Extension, Router};
+use axum::{routing::post, Extension, Router};
 use lib::settings::{self};
 use migration::{InventoryhMigrator as Migrator, MigratorTrait};
 use repository::product::ProductRepository;
 use std::net::SocketAddr;
 
+use crate::handler::add_product;
+
 mod entity;
+mod handler;
 mod repository;
 
 #[tokio::main]
@@ -17,10 +20,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Migrator::up(&connection, None).await?;
     let product_repository = ProductRepository::new(connection.clone());
 
-    let app = Router::new().layer(Extension(product_repository));
+    let app = Router::new()
+        .route("/inventory", post(add_product::handle))
+        .layer(Extension(product_repository));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 80));
-    println!("auth serv listening on {}", addr);
+    let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().inventory.port));
+    println!("inventory serv listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

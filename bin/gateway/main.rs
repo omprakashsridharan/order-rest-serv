@@ -24,10 +24,13 @@ async fn main() {
         };
     };
     let auth_handler = get(proxy(String::from("authserv"))).post(proxy(String::from("authserv")));
+    let inventory_handler =
+        get(proxy(String::from("inventoryserv"))).post(proxy(String::from("inventoryserv")));
 
     let app = Router::new()
         .route("/user/*path", auth_handler.clone())
         .route("/auth/*path", auth_handler.clone())
+        .route("/inventory", inventory_handler.clone())
         .layer(Extension(client));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().gateway.port));
