@@ -20,7 +20,7 @@ name = "inventoryserv"
 path = "./bin/inventoryserv/main.rs"
 
 [dependencies]
-axum = "0.5.13"
+axum = {version = "0.5.13", features = ["headers"] }
 hyper = { version = "0.14", features = ["full"] }
 tokio = { version = "1", features = ["full"] }
 lazy_static = "1.4.0"
