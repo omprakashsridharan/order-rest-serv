@@ -6,9 +6,6 @@ db_url="mysql://root:krishnaOp8@localhost:3306/auth"
 port=8002
 db_url="mysql://root:krishnaOp8@localhost:3306/inventory"
 
-[log]
-level = "debug"
-
 [jwt]
 secret="secret"
 

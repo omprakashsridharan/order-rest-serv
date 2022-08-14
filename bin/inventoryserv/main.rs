@@ -3,6 +3,8 @@ use lib::settings::{self};
 use migration::{InventoryhMigrator as Migrator, MigratorTrait};
 use repository::product::ProductRepository;
 use std::net::SocketAddr;
+use tower_http::trace::TraceLayer;
+use tracing::info;
 
 use crate::handler::add_product;
 
@@ -12,7 +14,9 @@ mod repository;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!(
+    dotenv::dotenv().ok();
+    tracing_subscriber::fmt::init();
+    info!(
         "DB url {}",
         settings::CONFIG.clone().inventory.db_url.clone()
     );
@@ -22,10 +26,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let app = Router::new()
         .route("/inventory", post(add_product::handle))
+        .layer(TraceLayer::new_for_http())
         .layer(Extension(product_repository));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().inventory.port));
-    println!("inventory serv listening on {}", addr);
+    info!("inventory serv listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await

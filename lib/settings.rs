@@ -2,11 +2,7 @@ use std::{env, fmt};
 
 use config::{Config, ConfigError, Environment, File, FileFormat};
 use serde::Deserialize;
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct Log {
-    pub level: String,
-}
+use tracing::info;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct Jwt {
@@ -36,7 +32,6 @@ pub struct Settings {
     pub gateway: Gateway,
     pub auth: Auth,
     pub inventory: Inventory,
-    pub log: Log,
     pub env: ENV,
 }
 
@@ -70,7 +65,7 @@ impl Settings {
             .unwrap_or_else(|_| "Development".into())
             .as_str()
             .into();
-        println!("Run mode {}", run_mode);
+        info!("Run mode {}", run_mode);
         let file = match run_mode.clone() {
             ENV::Development => {
                 File::from_str(include_str!("config/Development.toml"), FileFormat::Toml)

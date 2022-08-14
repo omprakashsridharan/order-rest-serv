@@ -1,6 +1,9 @@
 use std::fmt::{Display, Formatter, Result};
 
-#[derive(Debug)]
+use sea_orm::strum::EnumString;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, EnumString, Serialize, Deserialize)]
 pub enum ROLES {
     ADMIN,
     USER,

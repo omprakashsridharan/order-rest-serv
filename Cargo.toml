@@ -38,6 +38,7 @@ chrono = "0.4.21"
 dotenv = "0.15.0"
 config = "0.13.2"
 migration = {path="./migration"}
+tower-http = {version = "0.3.4", features=["trace"] }
 
 [dependencies.sea-orm-migration]
 version = "^0.9.0"

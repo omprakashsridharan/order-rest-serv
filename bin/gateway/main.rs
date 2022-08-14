@@ -7,11 +7,15 @@ use axum::{
 use hyper::{client::HttpConnector, Body};
 use lib::settings;
 use std::net::SocketAddr;
+use tower_http::trace::TraceLayer;
+use tracing::info;
 
 type Client = hyper::client::Client<HttpConnector, Body>;
 
 #[tokio::main]
 async fn main() {
+    dotenv::dotenv().ok();
+    tracing_subscriber::fmt::init();
     let client = Client::new();
 
     let proxy = |service: String| {
@@ -31,10 +35,11 @@ async fn main() {
         .route("/user/*path", auth_handler.clone())
         .route("/auth/*path", auth_handler.clone())
         .route("/inventory", inventory_handler.clone())
+        .layer(TraceLayer::new_for_http())
         .layer(Extension(client));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().gateway.port));
-    println!("reverse proxy listening on {}", addr);
+    info!("reverse proxy listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
@@ -51,7 +56,6 @@ async fn handler(Extension(client): Extension<Client>, mut req: Request<Body>) -
         .unwrap_or(path);
 
     let uri = format!("http://{}{}", service_header.to_str().unwrap(), path_query);
-    println!("Uri {:?}", uri);
     *req.uri_mut() = Uri::try_from(uri).unwrap();
 
     client.request(req).await.unwrap()

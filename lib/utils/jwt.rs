@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use crate::constants::JWT_SECRET;
+use crate::enums::ROLES;
 use crate::error::Result as ErrorResult;
 use async_trait::async_trait;
 use axum::extract::{FromRequest, RequestParts, TypedHeader};
@@ -22,20 +25,19 @@ pub struct Claims {
     pub exp: i64,
     pub iat: i64,
     pub user_id: i32,
-    pub role: String,
+    pub role: ROLES,
 }
 
 impl Claims {
     pub fn new(email: String, user_id: i32, role: String) -> Self {
         let iat = Utc::now();
         let exp = iat + Duration::hours(24);
-
         Self {
             sub: email,
             iat: iat.timestamp(),
             exp: exp.timestamp(),
             user_id,
-            role,
+            role: ROLES::from_str(&role).unwrap(),
         }
     }
 }
