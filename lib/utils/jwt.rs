@@ -7,9 +7,9 @@ use async_trait::async_trait;
 use axum::extract::{FromRequest, RequestParts, TypedHeader};
 use axum::headers::{authorization::Bearer, Authorization};
 use axum::response::IntoResponse;
-use axum::Json;
+use axum::{http::StatusCode, Json};
+use axum_casbin_auth::CasbinAuthClaims;
 use chrono::{Duration, Utc};
-use hyper::StatusCode;
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -19,9 +19,9 @@ pub fn validate_payload<T: Validate>(payload: &T) -> ErrorResult<()> {
     Ok(payload.validate()?)
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Claims {
-    pub sub: String,
+    pub subject: String,
     pub exp: i64,
     pub iat: i64,
     pub user_id: i32,
@@ -33,7 +33,7 @@ impl Claims {
         let iat = Utc::now();
         let exp = iat + Duration::hours(24);
         Self {
-            sub: email,
+            subject: email,
             iat: iat.timestamp(),
             exp: exp.timestamp(),
             user_id,
@@ -81,10 +81,26 @@ where
                 .map_err(|_| AuthError::InvalidToken)?;
         // Decode the user data
         let token_data = verify(bearer.token()).map_err(|_| AuthError::InvalidToken)?;
-
+        req.extensions_mut().insert(token_data.clone());
+        req.extensions_mut()
+            .insert(CasbinAuthClaims::new(token_data.clone().subject));
         Ok(token_data)
     }
 }
+
+// async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
+//     let token = req
+//         .headers()
+//         .get(http::header::AUTHORIZATION)
+//         .and_then(|header| header.to_str().ok())
+//         .ok_or(AuthError::InvalidToken)
+//         .unwrap();
+
+//     match verify(token) {
+//         Ok(claims) => Ok(next.run(req).await),
+//         Err(_) => Err(StatusCode::UNAUTHORIZED),
+//     }
+// }
 
 impl IntoResponse for AuthError {
     fn into_response(self) -> axum::response::Response {

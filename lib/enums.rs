@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Result};
 use sea_orm::strum::EnumString;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, EnumString, Serialize, Deserialize)]
+#[derive(Debug, EnumString, Serialize, Deserialize, Clone)]
 pub enum ROLES {
     ADMIN,
     USER,
