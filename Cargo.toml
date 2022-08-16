@@ -39,7 +39,7 @@ dotenv = "0.15.0"
 config = "0.13.2"
 migration = {path="./migration"}
 tower-http = {version = "0.3.4", features=["trace"] }
-axum-casbin-auth = "0.1.0"
+axum-casbin-auth = "1.0.0"
 tower = "0.4.13"
 
 [dependencies.sea-orm-migration]

@@ -88,20 +88,6 @@ where
     }
 }
 
-// async fn auth<B>(req: Request<B>, next: Next<B>) -> Result<Response, StatusCode> {
-//     let token = req
-//         .headers()
-//         .get(http::header::AUTHORIZATION)
-//         .and_then(|header| header.to_str().ok())
-//         .ok_or(AuthError::InvalidToken)
-//         .unwrap();
-
-//     match verify(token) {
-//         Ok(claims) => Ok(next.run(req).await),
-//         Err(_) => Err(StatusCode::UNAUTHORIZED),
-//     }
-// }
-
 impl IntoResponse for AuthError {
     fn into_response(self) -> axum::response::Response {
         let (status, error_message) = match self {
