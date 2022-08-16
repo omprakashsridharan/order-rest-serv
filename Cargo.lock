@@ -269,15 +269,14 @@ dependencies = [
 
 [[package]]
 name = "axum-casbin-auth"
-version = "0.1.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "299715e4fa9daa553917445306fa5287763af658df8e0b1f5f1b605537066675"
+checksum = "46137d68ff2bbe60da9fcbb971111b3289ff4afe2f3522359debbb139839b795"
 dependencies = [
  "axum",
  "casbin",
  "futures",
  "http-body",
- "hyper",
  "pin-project-lite",
  "serde",
  "serde_json",
