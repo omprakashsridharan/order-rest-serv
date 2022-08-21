@@ -1,19 +1,27 @@
 use axum::{
     extract::Extension,
     http::{uri::Uri, HeaderValue, Request, Response},
+    middleware::from_extractor,
     routing::get,
     Router,
 };
+use axum_casbin_auth::{
+    casbin::{CoreApi, Enforcer},
+    CasbinAuthLayer,
+};
 use hyper::{client::HttpConnector, Body};
 use lib::settings;
+use lib::utils::jwt::Claims;
 use std::net::SocketAddr;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
 type Client = hyper::client::Client<HttpConnector, Body>;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     tracing_subscriber::fmt::init();
     let client = Client::new();
@@ -31,12 +39,17 @@ async fn main() {
     let inventory_handler =
         get(proxy(String::from("inventoryserv"))).post(proxy(String::from("inventoryserv")));
 
+    let e = Enforcer::new("casbin/model.conf", "casbin/policy.csv").await?;
+    let casbin_auth_enforcer = Arc::new(RwLock::new(e));
+
     let app = Router::new()
         .route("/user/*path", auth_handler.clone())
         .route("/auth/*path", auth_handler.clone())
         .route("/inventory", inventory_handler.clone())
-        .layer(TraceLayer::new_for_http())
-        .layer(Extension(client));
+        .layer(Extension(client))
+        .layer(CasbinAuthLayer::new(casbin_auth_enforcer))
+        .layer(from_extractor::<Claims>())
+        .layer(TraceLayer::new_for_http());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().gateway.port));
     info!("reverse proxy listening on {}", addr);
@@ -44,6 +57,7 @@ async fn main() {
         .serve(app.into_make_service())
         .await
         .unwrap();
+    Ok(())
 }
 
 async fn handler(Extension(client): Extension<Client>, mut req: Request<Body>) -> Response<Body> {
