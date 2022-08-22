@@ -27,11 +27,18 @@ pub struct Inventory {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct Order {
+    pub port: u16,
+    pub db_url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub jwt: Jwt,
     pub gateway: Gateway,
     pub auth: Auth,
     pub inventory: Inventory,
+    pub order: Order,
     pub env: ENV,
 }
 

@@ -40,6 +40,26 @@ services:
     volumes:
       - inventory-db:/var/lib/mysql
   
+  orderdb:
+    image: mysql/mysql-server:8.0.23
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    env_file: ./.env
+    container_name: orderdb
+    environment:
+      MYSQL_DATABASE: $ORDER_DB_NAME
+      MYSQL_USER: $ORDER_DB_USER
+      MYSQL_PASSWORD: $ORDER_DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $ORDER_DB_ROOT_PASSWORD
+      MYSQL_ROOT_HOST: "%"
+      RUN_MODE: "Production"
+    ports:
+      - 3309:3306
+    expose:
+      - 3306
+    volumes:
+      - order-db:/var/lib/mysql
+  
   authserv:
     image: authserv
     container_name: authserv
@@ -88,6 +108,30 @@ services:
     stdin_open: true
     tty: true
 
+  orderserv:
+    image: orderserv
+    container_name: orderserv
+    build:
+      context: .
+      dockerfile: ./orderserv.Dockerfile
+    depends_on:
+      - orderdb
+    restart: on-failure
+    env_file: ./.env
+    command: sh -c "/usr/local/bin/wait && /usr/local/bin/orderserv"
+    ports:
+      - 8003:80
+    expose:
+      - 8003
+    environment:
+      - RUN_MODE=Production
+      - WAIT_HOSTS=orderdb:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+    stdin_open: true
+    tty: true
+
   gateway:
     depends_on:
       - authserv
@@ -109,3 +153,4 @@ services:
 volumes:
   auth-db:
   inventory-db:
+  order-db:
