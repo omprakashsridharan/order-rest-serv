@@ -4,7 +4,7 @@ use hyper::StatusCode;
 use lib::{
     dto::AddProductData,
     error::{ApiResult, Error},
-    utils::jwt::{validate_payload, Claims},
+    utils::jwt::validate_payload,
 };
 
 use crate::repository::product::ProductRepository;
@@ -12,7 +12,6 @@ use crate::repository::product::ProductRepository;
 pub async fn handle(
     Json(input): Json<AddProductData>,
     Extension(product_repository): Extension<ProductRepository>,
-    claims: Claims,
 ) -> ApiResult<(StatusCode, String)> {
     validate_payload(&input)?;
     product_repository

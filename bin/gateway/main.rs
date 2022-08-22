@@ -12,6 +12,7 @@ use axum_casbin_auth::{
 use hyper::{client::HttpConnector, Body};
 use lib::settings;
 use lib::utils::jwt::Claims;
+use sea_orm_casbin_adapter::SeaOrmAdapter;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::RwLock;
@@ -39,16 +40,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let inventory_handler =
         get(proxy(String::from("inventoryserv"))).post(proxy(String::from("inventoryserv")));
 
-    let e = Enforcer::new("casbin/model.conf", "casbin/policy.csv").await?;
+    let db = SeaOrmAdapter::new(&settings::CONFIG.clone().auth.db_url, true)
+        .await
+        .expect("open db error");
+    let e = Enforcer::new("casbin/model.conf", db).await?;
     let casbin_auth_enforcer = Arc::new(RwLock::new(e));
 
     let app = Router::new()
         .route("/user/*path", auth_handler.clone())
-        .route("/auth/*path", auth_handler.clone())
         .route("/inventory", inventory_handler.clone())
-        .layer(Extension(client))
         .layer(CasbinAuthLayer::new(casbin_auth_enforcer))
         .layer(from_extractor::<Claims>())
+        .route("/auth/*path", auth_handler.clone())
+        .layer(Extension(client))
         .layer(TraceLayer::new_for_http());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().gateway.port));

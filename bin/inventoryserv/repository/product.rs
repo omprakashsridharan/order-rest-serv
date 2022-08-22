@@ -1,7 +1,7 @@
 use crate::entity::product;
 use lib::db::connection::{DatabaseConnection, DbErr};
 use lib::db::prelude::*;
-use tracing::{error, info};
+use tracing::info;
 
 #[derive(Clone)]
 pub struct ProductRepository {
@@ -29,17 +29,5 @@ impl ProductRepository {
         .await?;
         info!("Product added successfully");
         Ok(())
-    }
-
-    pub async fn get_product(&self, product_id: i32) -> Result<product::Model, DbErr> {
-        if let Some(model) = product::Entity::find_by_id(product_id)
-            .one(&self.db_pool)
-            .await?
-        {
-            Ok(model)
-        } else {
-            error!("Product not found in DB");
-            Err(DbErr::Custom("Product not found in DB".to_string()))
-        }
     }
 }
