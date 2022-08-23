@@ -1,10 +1,12 @@
 use axum::Router;
 
 use lib::settings;
-use migration::{InventoryhMigrator as Migrator, MigratorTrait};
+use migration::{MigratorTrait, OrderhMigrator as Migrator};
 use std::net::SocketAddr;
 use tower_http::trace::TraceLayer;
 use tracing::info;
+
+mod handler;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
