@@ -22,7 +22,20 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Password).string().not_null())
                     .col(ColumnDef::new(User::Address).string().not_null())
                     .col(ColumnDef::new(User::Phone).string().not_null())
-                    .col(ColumnDef::new(User::Role).string().not_null())
+                    .col(
+                        ColumnDef::new(User::CreatedAt)
+                            .not_null()
+                            .date_time()
+                            .extra("DEFAULT CURRENT_TIMESTAMP".to_string()),
+                    )
+                    .col(
+                        ColumnDef::new(User::UpdatedAt)
+                            .not_null()
+                            .date_time()
+                            .extra(
+                                "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP".to_string(),
+                            ),
+                    )
                     .to_owned(),
             )
             .await
@@ -44,5 +57,6 @@ enum User {
     Password,
     Address,
     Phone,
-    Role,
+    CreatedAt,
+    UpdatedAt,
 }
