@@ -33,12 +33,19 @@ pub struct Order {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct Cart {
+    pub port: u16,
+    pub db_url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub jwt: Jwt,
     pub gateway: Gateway,
     pub auth: Auth,
     pub inventory: Inventory,
     pub order: Order,
+    pub cart: Cart,
     pub env: ENV,
 }
 

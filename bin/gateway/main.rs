@@ -47,9 +47,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let casbin_auth_enforcer = Arc::new(RwLock::new(e));
 
     let app = Router::new()
-        .route("/user/*path", auth_handler.clone())
         .route("/inventory", inventory_handler.clone())
-        .layer(CasbinAuthLayer::new(casbin_auth_enforcer))
+        // .layer(CasbinAuthLayer::new(casbin_auth_enforcer))
         .layer(from_extractor::<Claims>())
         .route("/auth/*path", auth_handler.clone())
         .layer(Extension(client))

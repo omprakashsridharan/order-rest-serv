@@ -22,11 +22,20 @@ impl MigratorTrait for InventoryhMigrator {
     }
 }
 
+pub struct CarthMigrator;
+
+#[async_trait::async_trait]
+impl MigratorTrait for CarthMigrator {
+    fn migrations() -> Vec<Box<dyn MigrationTrait>> {
+        vec![Box::new(create_cart_table::Migration)]
+    }
+}
+
 pub struct OrderhMigrator;
 
 #[async_trait::async_trait]
 impl MigratorTrait for OrderhMigrator {
     fn migrations() -> Vec<Box<dyn MigrationTrait>> {
-        vec![Box::new(create_cart_table::Migration)]
+        vec![]
     }
 }

@@ -15,3 +15,7 @@ db_url="mysql://root:password@orderdb:3306/order"
 [inventory]
 port=80
 db_url="mysql://root:password@inventorydb:3306/inventory"
+
+[cart]
+port=80
+db_url="mysql://root:password@inventorydb:3306/cart"

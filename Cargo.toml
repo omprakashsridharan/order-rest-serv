@@ -23,6 +23,10 @@ path = "./bin/inventoryserv/main.rs"
 name = "orderserv"
 path = "./bin/orderserv/main.rs"
 
+[[bin]]
+name = "cartserv"
+path = "bin/cartserv/main.rs"
+
 [dependencies]
 axum = {version = "0.5.13", features = ["headers"] }
 hyper = { version = "0.14", features = ["full"] }
