@@ -30,3 +30,8 @@ pub struct AddProductData {
     pub description: String,
     pub price: f32,
 }
+
+#[derive(Debug, Deserialize, Validate)]
+pub struct AddCartProductData {
+    pub product_id: i32,
+}

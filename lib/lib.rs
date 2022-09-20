@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
+pub mod clients;
 pub mod constants;
 pub mod db;
 pub mod dto;

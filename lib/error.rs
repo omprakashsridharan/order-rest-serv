@@ -28,6 +28,10 @@ pub enum Error {
     SignupError,
     #[error("error while adding product to the inventory")]
     AddProductError,
+    #[error("error while adding product to the cart")]
+    AddProductToCartError,
+    #[error("Product is already in cart")]
+    ProductAlreadyInCartError,
 }
 pub type Result<T> = std::result::Result<T, Error>;
 
