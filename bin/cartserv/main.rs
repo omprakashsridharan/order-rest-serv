@@ -1,7 +1,7 @@
 use axum::{routing::post, Extension, Router};
 
 use lib::{settings, utils::init::initialise};
-use migration::CarthMigrator as Migrator;
+use migration::CartMigrator as Migrator;
 use std::net::SocketAddr;
 use tower_http::trace::TraceLayer;
 use tracing::info;

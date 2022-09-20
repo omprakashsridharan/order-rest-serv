@@ -19,7 +19,7 @@ services:
       - 3306
     volumes:
       - auth-db:/var/lib/mysql
-  
+
   inventorydb:
     image: mysql/mysql-server:8.0.23
     command: --default-authentication-plugin=mysql_native_password
@@ -39,7 +39,7 @@ services:
       - 3306
     volumes:
       - inventory-db:/var/lib/mysql
-  
+
   orderdb:
     image: mysql/mysql-server:8.0.23
     command: --default-authentication-plugin=mysql_native_password
@@ -59,7 +59,27 @@ services:
       - 3306
     volumes:
       - order-db:/var/lib/mysql
-  
+
+  cartdb:
+    image: mysql/mysql-server:8.0.23
+    command: --default-authentication-plugin=mysql_native_password
+    restart: unless-stopped
+    env_file: ./.env
+    container_name: cartdb
+    environment:
+      MYSQL_DATABASE: $CART_DB_NAME
+      MYSQL_USER: $CART_DB_USER
+      MYSQL_PASSWORD: $CART_DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $CART_DB_ROOT_PASSWORD
+      MYSQL_ROOT_HOST: "%"
+      RUN_MODE: "Production"
+    ports:
+      - 3310:3306
+    expose:
+      - 3306
+    volumes:
+      - cart-db:/var/lib/mysql
+
   authserv:
     image: authserv
     container_name: authserv
@@ -83,7 +103,7 @@ services:
       - WAIT_HOST_CONNECT_TIMEOUT=30
     stdin_open: true
     tty: true
-  
+
   inventoryserv:
     image: inventoryserv
     container_name: inventoryserv
@@ -132,6 +152,30 @@ services:
     stdin_open: true
     tty: true
 
+  cartserv:
+    image: cartserv
+    container_name: cartserv
+    build:
+      context: .
+      dockerfile: ./cartserv.Dockerfile
+    depends_on:
+      - cartdb
+    restart: on-failure
+    env_file: ./.env
+    command: sh -c "/usr/local/bin/wait && /usr/local/bin/cartserv"
+    ports:
+      - 8004:80
+    expose:
+      - 8004
+    environment:
+      - RUN_MODE=Production
+      - WAIT_HOSTS=cartdb:3306
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+    stdin_open: true
+    tty: true
+
   gateway:
     depends_on:
       - authserv
@@ -154,3 +198,4 @@ volumes:
   auth-db:
   inventory-db:
   order-db:
+  cart-db:
