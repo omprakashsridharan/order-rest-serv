@@ -5,10 +5,7 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_casbin_auth::{
-    casbin::{CoreApi, Enforcer},
-    CasbinAuthLayer,
-};
+use axum_casbin_auth::casbin::{CoreApi, Enforcer};
 use hyper::{client::HttpConnector, Body};
 use lib::settings;
 use lib::utils::jwt::Claims;
@@ -44,7 +41,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await
         .expect("open db error");
     let e = Enforcer::new("casbin/model.conf", db).await?;
-    let casbin_auth_enforcer = Arc::new(RwLock::new(e));
+    let _casbin_auth_enforcer = Arc::new(RwLock::new(e));
 
     let app = Router::new()
         .route("/inventory", inventory_handler.clone())
