@@ -1,3 +1,7 @@
+#[cfg(not(test))]
+use crate::repository::cart::CartRepository;
+#[cfg(test)]
+use crate::repository::cart::MockCartRepository as CartRepository;
 use axum::{Extension, Json};
 
 use hyper::StatusCode;
@@ -8,8 +12,6 @@ use lib::{
     utils::jwt::{validate_payload, Claims},
 };
 use tracing::{error, info};
-
-use crate::repository::cart::CartRepository;
 
 pub async fn handle(
     Json(input): Json<AddCartProductData>,

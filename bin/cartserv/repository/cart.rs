@@ -1,5 +1,7 @@
 use migration::DbErr;
 use migration::Expr;
+#[cfg(test)]
+use mockall::mock;
 use sea_orm::prelude::*;
 use sea_orm::DatabaseConnection;
 use sea_orm::Set;
@@ -13,10 +15,6 @@ pub struct CartRepository {
 }
 
 impl CartRepository {
-    pub fn new(db_pool: DatabaseConnection) -> Self {
-        CartRepository { db_pool }
-    }
-
     pub async fn is_product_already_in_cart(
         &self,
         user_id: i32,
@@ -61,5 +59,20 @@ impl CartRepository {
             .exec(&self.db_pool)
             .await?;
         Ok(order_request_id)
+    }
+}
+
+#[cfg(test)]
+mock! {
+    #[derive(Clone)]
+    pub CartRepository {
+        pub async fn is_product_already_in_cart(
+            &self,
+            user_id: i32,
+            product_id: i32,
+        ) -> Result<bool, DbErr>;
+        pub async fn add_product(&self, user_id: i32, product_id: i32) -> Result<(), DbErr>;
+        pub async fn get_cart_items(&self, user_id: i32) -> Result<Vec<i32>, DbErr>;
+        pub async fn lock_cart_items(&self, user_id: i32) -> Result<Uuid, DbErr>;
     }
 }

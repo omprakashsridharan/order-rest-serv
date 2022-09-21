@@ -6,17 +6,22 @@ use std::net::SocketAddr;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
-use crate::{handler::add_product, repository::cart::CartRepository};
+use crate::handler::add_product;
+use crate::repository::cart::CartRepository;
 
 mod entity;
 mod handler;
 mod repository;
 
 #[tokio::main]
+#[cfg(not(test))]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db_pool = initialise::<Migrator>(settings::CONFIG.clone().cart.db_url.clone()).await?;
-    let cart_repository = CartRepository::new(db_pool.clone());
+    let cart_repository = CartRepository {
+        db_pool: db_pool.clone(),
+    };
     let clients = get_clients();
+
     let app = Router::new()
         .route("/cart", post(add_product::handle))
         .layer(TraceLayer::new_for_http())
