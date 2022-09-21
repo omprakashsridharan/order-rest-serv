@@ -1,15 +1,16 @@
 use crate::entity::product;
 use lib::db::connection::{DatabaseConnection, DbErr};
 use lib::db::prelude::*;
+use std::sync::Arc;
 use tracing::info;
 
 #[derive(Clone)]
 pub struct ProductRepository {
-    pub db_pool: DatabaseConnection,
+    pub db_pool: Arc<DatabaseConnection>,
 }
 
 impl ProductRepository {
-    pub fn new(db_pool: DatabaseConnection) -> Self {
+    pub fn new(db_pool: Arc<DatabaseConnection>) -> Self {
         ProductRepository { db_pool }
     }
 
@@ -25,7 +26,7 @@ impl ProductRepository {
             price: Set(price),
             ..Default::default()
         }
-        .save(&self.db_pool)
+        .save(self.db_pool.as_ref())
         .await?;
         info!("Product added successfully");
         Ok(())

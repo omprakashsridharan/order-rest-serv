@@ -3,13 +3,14 @@ use migration::Expr;
 use sea_orm::prelude::*;
 use sea_orm::DatabaseConnection;
 use sea_orm::Set;
+use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::entity::cart;
 
 #[derive(Clone)]
 pub struct CartRepository {
-    pub db_pool: DatabaseConnection,
+    pub db_pool: Arc<DatabaseConnection>,
 }
 
 impl CartRepository {
@@ -21,7 +22,7 @@ impl CartRepository {
         if let Some(_) = cart::Entity::find()
             .filter(cart::Column::UserId.eq(user_id))
             .filter(cart::Column::ProductId.eq(product_id))
-            .one(&self.db_pool)
+            .one(self.db_pool.as_ref())
             .await?
         {
             return Ok(true);
@@ -35,7 +36,7 @@ impl CartRepository {
             product_id: Set(product_id),
             ..Default::default()
         }
-        .save(&self.db_pool)
+        .save(self.db_pool.as_ref())
         .await?;
         Ok(())
     }
@@ -44,7 +45,7 @@ impl CartRepository {
         let cart_items = cart::Entity::find()
             .filter(cart::Column::UserId.eq(user_id))
             .filter(cart::Column::OrderRequestId.is_null())
-            .all(&self.db_pool)
+            .all(self.db_pool.as_ref())
             .await?;
         Ok(cart_items.iter().map(|c| c.product_id).collect())
     }
@@ -54,7 +55,7 @@ impl CartRepository {
         cart::Entity::update_many()
             .col_expr(cart::Column::OrderRequestId, Expr::value(order_request_id))
             .filter(cart::Column::UserId.eq(user_id))
-            .exec(&self.db_pool)
+            .exec(self.db_pool.as_ref())
             .await?;
         Ok(order_request_id)
     }

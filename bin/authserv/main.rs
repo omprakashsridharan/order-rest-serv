@@ -1,11 +1,11 @@
 use axum::routing::post;
 use axum::{Extension, Router};
 use handler::{login, signup};
-use lib::settings;
+use lib::{settings, utils::init::initialise};
 use migration::{AuthMigrator as Migrator, MigratorTrait};
 use repository::auth::AuthRepository;
-use tower_http::trace::TraceLayer;
 use std::net::SocketAddr;
+use tower_http::trace::TraceLayer;
 use tracing::info;
 
 mod entity;
@@ -14,12 +14,8 @@ mod repository;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv::dotenv().ok();
-    tracing_subscriber::fmt::init();
-    info!("DB url {}", settings::CONFIG.clone().auth.db_url.clone());
-    let connection = sea_orm::Database::connect(&settings::CONFIG.clone().auth.db_url).await?;
-    Migrator::up(&connection, None).await?;
-    let auth_repository = AuthRepository::new(connection.clone());
+    let db_pool = initialise::<Migrator>(settings::CONFIG.clone().auth.db_url.clone()).await?;
+    let auth_repository = AuthRepository::new(db_pool.clone());
 
     let app = Router::new()
         .route("/auth/login", post(login::handle))

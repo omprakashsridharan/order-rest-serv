@@ -6,15 +6,16 @@ use lib::db::connection::{DatabaseConnection, DbErr};
 use lib::enums::ROLES;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter};
+use std::sync::Arc;
 use tracing::{error, info};
 
 #[derive(Clone)]
 pub struct AuthRepository {
-    pub db_pool: DatabaseConnection,
+    pub db_pool: Arc<DatabaseConnection>,
 }
 
 impl AuthRepository {
-    pub fn new(db_pool: DatabaseConnection) -> Self {
+    pub fn new(db_pool: Arc<DatabaseConnection>) -> Self {
         AuthRepository { db_pool }
     }
 
@@ -33,7 +34,7 @@ impl AuthRepository {
             role: Set(ROLES::USER.to_string()),
             ..Default::default()
         }
-        .save(&self.db_pool)
+        .save(self.db_pool.as_ref())
         .await?;
         info!("User created successfully");
 
@@ -44,7 +45,7 @@ impl AuthRepository {
         let user_model_option = UserEntity::find()
             .filter(UserColumn::Email.contains(&email))
             .filter(UserColumn::Password.eq(&*password))
-            .one(&self.db_pool)
+            .one(self.db_pool.as_ref())
             .await?;
         if let Some(user_model) = user_model_option {
             Ok(user_model)
