@@ -1,7 +1,4 @@
-#[cfg(not(test))]
 use crate::repository::cart::CartRepository;
-#[cfg(test)]
-use crate::repository::cart::MockCartRepository as CartRepository;
 use axum::{Extension, Json};
 
 use hyper::StatusCode;

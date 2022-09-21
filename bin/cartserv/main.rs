@@ -14,7 +14,6 @@ mod handler;
 mod repository;
 
 #[tokio::main]
-#[cfg(not(test))]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db_pool = initialise::<Migrator>(settings::CONFIG.clone().cart.db_url.clone()).await?;
     let cart_repository = CartRepository {
