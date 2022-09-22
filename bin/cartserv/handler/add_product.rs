@@ -33,11 +33,7 @@ pub async fn handle(
             .inventory_client
             .get_product_details(product_id)
             .await
-            .map_err(|e| {
-                error!("Error while getting product details: {e}");
-                Error::GetProductDetailsError
-            })?
-            .ok_or(Error::AddProductToCartError)
+            .ok_or(Error::GetProductDetailsError)
             .unwrap();
         info!("{} added to cart", product_details.name);
         cart_repository
