@@ -1,5 +1,6 @@
 use axum::{routing::post, Extension, Router};
 
+use lib::clients::ApiClient;
 use lib::{clients::get_clients, settings, utils::init::initialise};
 use migration::CartMigrator as Migrator;
 use std::net::SocketAddr;
@@ -22,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let clients = get_clients();
 
     let app = Router::new()
-        .route("/cart", post(add_product::handle))
+        .route("/cart", post(add_product::handle::<ApiClient>))
         .layer(TraceLayer::new_for_http())
         .layer(Extension(cart_repository))
         .layer(Extension(clients));

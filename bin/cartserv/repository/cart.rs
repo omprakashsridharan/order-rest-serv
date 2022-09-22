@@ -31,12 +31,12 @@ impl CartRepository {
     }
 
     pub async fn add_product(&self, user_id: i32, product_id: i32) -> Result<(), DbErr> {
-        cart::ActiveModel {
+        cart::Entity::insert(cart::ActiveModel {
             user_id: Set(user_id),
             product_id: Set(product_id),
             ..Default::default()
-        }
-        .save(self.db_pool.as_ref())
+        })
+        .exec(self.db_pool.as_ref())
         .await?;
         Ok(())
     }

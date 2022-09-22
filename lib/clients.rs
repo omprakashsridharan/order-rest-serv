@@ -9,24 +9,24 @@ pub struct Product {
     pub name: String,
 }
 
-#[derive(Clone)]
-pub struct InventoryClient {}
+#[axum::async_trait]
+pub trait TClient: Clone + Send + Sized + 'static {
+    async fn get_product_details(&self, product_id: i32) -> Option<GetProductDetailsResponse>;
+}
 
-impl InventoryClient {
-    pub async fn get_product_details(&self, product_id: i32) -> Option<GetProductDetailsResponse> {
+#[derive(Clone)]
+pub struct ApiClient {}
+
+pub fn get_clients() -> impl TClient {
+    ApiClient {}
+}
+
+#[axum::async_trait]
+impl TClient for ApiClient {
+    async fn get_product_details(&self, product_id: i32) -> Option<GetProductDetailsResponse> {
         Some(GetProductDetailsResponse {
             product_id,
             name: String::from("x"),
         })
     }
-}
-
-#[derive(Clone)]
-pub struct Clients {
-    pub inventory_client: InventoryClient,
-}
-
-pub fn get_clients() -> Clients {
-    let inventory_client: InventoryClient = InventoryClient {};
-    Clients { inventory_client }
 }

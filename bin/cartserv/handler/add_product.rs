@@ -2,18 +2,18 @@ use crate::repository::cart::CartRepository;
 use axum::{Extension, Json};
 use hyper::StatusCode;
 use lib::{
-    clients::Clients,
+    clients::TClient,
     dto::AddCartProductData,
     error::{ApiError, ApiResult, Error},
     utils::jwt::{validate_payload, Claims},
 };
 use tracing::{error, info};
 
-pub async fn handle(
+pub async fn handle<T: TClient>(
     Json(input): Json<AddCartProductData>,
     claims: Claims,
     Extension(cart_repository): Extension<CartRepository>,
-    Extension(clients): Extension<Clients>,
+    Extension(clients): Extension<T>,
 ) -> ApiResult<(StatusCode, String)> {
     validate_payload(&input)?;
     info!("Add product to cart request received");
@@ -30,7 +30,6 @@ pub async fn handle(
 
     if !is_product_already_in_cart {
         let product_details = clients
-            .inventory_client
             .get_product_details(product_id)
             .await
             .ok_or(Error::GetProductDetailsError)
@@ -63,8 +62,25 @@ mod tests {
 
     use super::*;
     use axum::{http::StatusCode, Extension, Json};
-    use lib::{clients::get_clients, dto::AddCartProductData, enums::ROLES, utils::jwt::Claims};
-    use sea_orm::{DatabaseBackend, MockDatabase};
+    use lib::{
+        dto::{AddCartProductData, GetProductDetailsResponse},
+        enums::ROLES,
+        utils::jwt::Claims,
+    };
+    use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
+
+    #[derive(Clone)]
+    struct MockClient {}
+
+    #[axum::async_trait]
+    impl TClient for MockClient {
+        async fn get_product_details(&self, product_id: i32) -> Option<GetProductDetailsResponse> {
+            Some(GetProductDetailsResponse {
+                product_id,
+                name: String::from("x"),
+            })
+        }
+    }
 
     #[tokio::test]
     async fn test_product_already_in_cart() {
@@ -87,7 +103,7 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let clients = Extension(get_clients());
+        let clients = Extension(MockClient {});
         let cart_repository_extension = Extension(cart_repository);
         let result = handle(
             add_cart_product_data,
@@ -109,6 +125,10 @@ mod tests {
         let product_id = 1;
         let db_pool = MockDatabase::new(DatabaseBackend::MySql)
             .append_query_results::<cart::Model>(vec![vec![]])
+            .append_exec_results(vec![MockExecResult {
+                last_insert_id: 1,
+                rows_affected: 1,
+            }])
             .into_connection();
         let cart_repository = CartRepository {
             db_pool: Arc::new(db_pool),
@@ -120,7 +140,7 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let clients = Extension(get_clients());
+        let clients = Extension(MockClient {});
         let cart_repository_extension = Extension(cart_repository);
         let result = handle(
             add_cart_product_data,
@@ -129,5 +149,10 @@ mod tests {
             clients,
         )
         .await;
+        assert_eq!(result.is_ok(), true);
+        let res = result.ok().unwrap();
+        let message = res.1;
+        assert_eq!(res.0, StatusCode::CREATED);
+        assert_eq!(message, "product added successfully");
     }
 }
