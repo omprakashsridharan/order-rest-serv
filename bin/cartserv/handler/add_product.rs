@@ -35,7 +35,7 @@ pub async fn handle(
             .await
             .map_err(|e| {
                 error!("Error while getting product details: {e}");
-                Error::AddProductToCartError
+                Error::GetProductDetailsError
             })?
             .ok_or(Error::AddProductToCartError)
             .unwrap();
@@ -75,14 +75,11 @@ mod tests {
         let user_id = 1;
         let product_id = 1;
         let db_pool = MockDatabase::new(DatabaseBackend::MySql)
-            .append_query_results(vec![
-                // First query result
-                vec![cart::Model {
-                    user_id,
-                    product_id,
-                    ..Default::default()
-                }],
-            ])
+            .append_query_results(vec![vec![cart::Model {
+                user_id,
+                product_id,
+                ..Default::default()
+            }]])
             .into_connection();
         let cart_repository = CartRepository {
             db_pool: Arc::new(db_pool),
@@ -108,5 +105,33 @@ mod tests {
         assert_eq!(err.0, StatusCode::INTERNAL_SERVER_ERROR);
         let message = err.1.get("message").unwrap();
         assert_eq!(message, "Product is already in cart");
+    }
+
+    #[tokio::test]
+    async fn test_product_not_in_cart() {
+        let user_id = 1;
+        let product_id = 1;
+        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
+            .append_query_results::<cart::Model>(vec![vec![]])
+            .into_connection();
+        let cart_repository = CartRepository {
+            db_pool: Arc::new(db_pool),
+        };
+
+        let add_cart_product_data = Json(AddCartProductData { product_id });
+        let claims = Claims::new(
+            String::from("test@test.com"),
+            user_id,
+            ROLES::ADMIN.to_string(),
+        );
+        let clients = Extension(get_clients());
+        let cart_repository_extension = Extension(cart_repository);
+        let result = handle(
+            add_cart_product_data,
+            claims,
+            cart_repository_extension,
+            clients,
+        )
+        .await;
     }
 }

@@ -28,6 +28,8 @@ pub enum Error {
     SignupError,
     #[error("error while adding product to the inventory")]
     AddProductError,
+    #[error("error while getting product details")]
+    GetProductDetailsError,
     #[error("error while adding product to the cart")]
     AddProductToCartError,
     #[error("Product is already in cart")]
