@@ -19,13 +19,13 @@ impl CartRepository {
         user_id: i32,
         product_id: i32,
     ) -> Result<bool, DbErr> {
-        if let Some(_) = cart::Entity::find()
+        if let Some(model) = cart::Entity::find()
             .filter(cart::Column::UserId.eq(user_id))
             .filter(cart::Column::ProductId.eq(product_id))
             .one(self.db_pool.as_ref())
             .await?
         {
-            return Ok(true);
+            return Ok(model.user_id == user_id && model.product_id == product_id);
         }
         return Ok(false);
     }
