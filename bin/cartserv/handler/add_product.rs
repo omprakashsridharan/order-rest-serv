@@ -32,8 +32,7 @@ pub async fn handle<T: TClient>(
         let product_details = clients
             .get_product_details(product_id)
             .await
-            .ok_or(Error::GetProductDetailsError)
-            .unwrap();
+            .ok_or(Error::GetProductDetailsError)?;
         info!("{} added to cart", product_details.name);
         cart_repository
             .add_product(user_id, product_id)
@@ -68,6 +67,7 @@ mod tests {
         utils::jwt::Claims,
     };
     use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
+    use serde_json::Value;
 
     #[tokio::test]
     async fn test_product_already_in_cart() {
@@ -110,7 +110,53 @@ mod tests {
         let err = result.err().unwrap();
         assert_eq!(err.0, StatusCode::INTERNAL_SERVER_ERROR);
         let message = err.1.get("message").unwrap();
-        assert_eq!(message, "Product is already in cart");
+        assert_eq!(
+            message,
+            &Value::String(Error::ProductAlreadyInCartError.to_string())
+        );
+    }
+
+    #[tokio::test]
+    async fn test_get_product_details_error() {
+        let user_id = 1;
+        let product_id = 1;
+        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
+            .append_query_results::<cart::Model>(vec![vec![]])
+            .append_exec_results(vec![MockExecResult {
+                last_insert_id: 1,
+                rows_affected: 1,
+            }])
+            .into_connection();
+        let cart_repository = CartRepository {
+            db_pool: Arc::new(db_pool),
+        };
+
+        let add_cart_product_data = Json(AddCartProductData { product_id });
+        let claims = Claims::new(
+            String::from("test@test.com"),
+            user_id,
+            ROLES::ADMIN.to_string(),
+        );
+        let mut mock_client = MockClient::new();
+        mock_client.expect_get_product_details().return_const(None);
+        let clients = Extension(mock_client);
+        let cart_repository_extension = Extension(cart_repository);
+        let result = handle(
+            add_cart_product_data,
+            claims,
+            cart_repository_extension,
+            clients,
+        )
+        .await;
+        assert_eq!(result.is_err(), true);
+        let res = result.err().unwrap();
+        let message = res.1.get("message").unwrap();
+        assert_eq!(res.0, StatusCode::INTERNAL_SERVER_ERROR);
+        println!("{}", Error::GetProductDetailsError.to_string());
+        assert_eq!(
+            message,
+            &Value::String(Error::GetProductDetailsError.to_string())
+        );
     }
 
     #[tokio::test]
@@ -152,8 +198,6 @@ mod tests {
         .await;
         assert_eq!(result.is_ok(), true);
         let res = result.ok().unwrap();
-        let message = res.1;
         assert_eq!(res.0, StatusCode::CREATED);
-        assert_eq!(message, "product added successfully");
     }
 }
