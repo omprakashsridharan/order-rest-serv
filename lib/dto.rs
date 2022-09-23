@@ -36,7 +36,7 @@ pub struct AddCartProductData {
     pub product_id: i32,
 }
 
-#[derive(Debug, Deserialize, Validate)]
+#[derive(Debug, Deserialize, Validate, Clone)]
 pub struct GetProductDetailsResponse {
     pub product_id: i32,
     pub name: String,

@@ -58,29 +58,16 @@ mod tests {
 
     use std::sync::Arc;
 
-    use crate::entity::cart;
-
     use super::*;
+    use crate::entity::cart;
     use axum::{http::StatusCode, Extension, Json};
+    use lib::clients::MockClient;
     use lib::{
         dto::{AddCartProductData, GetProductDetailsResponse},
         enums::ROLES,
         utils::jwt::Claims,
     };
     use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
-
-    #[derive(Clone)]
-    struct MockClient {}
-
-    #[axum::async_trait]
-    impl TClient for MockClient {
-        async fn get_product_details(&self, product_id: i32) -> Option<GetProductDetailsResponse> {
-            Some(GetProductDetailsResponse {
-                product_id,
-                name: String::from("x"),
-            })
-        }
-    }
 
     #[tokio::test]
     async fn test_product_already_in_cart() {
@@ -103,7 +90,14 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let clients = Extension(MockClient {});
+        let mut mock_client = MockClient::new();
+        mock_client
+            .expect_get_product_details()
+            .return_const(Some(GetProductDetailsResponse {
+                product_id,
+                name: String::from("x"),
+            }));
+        let clients = Extension(mock_client);
         let cart_repository_extension = Extension(cart_repository);
         let result = handle(
             add_cart_product_data,
@@ -140,7 +134,14 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let clients = Extension(MockClient {});
+        let mut mock_client = MockClient::new();
+        mock_client
+            .expect_get_product_details()
+            .return_const(Some(GetProductDetailsResponse {
+                product_id,
+                name: String::from("x"),
+            }));
+        let clients = Extension(mock_client);
         let cart_repository_extension = Extension(cart_repository);
         let result = handle(
             add_cart_product_data,
