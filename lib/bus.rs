@@ -9,7 +9,7 @@ pub fn get_bus(rebbitmq_url: String) -> Arc<Bus> {
 }
 
 #[automock]
-pub trait TBus {
+pub trait TBus: Send + Sync {
     fn publish_event<T: 'static + BorshDeserialize + BorshSerialize>(
         &self,
         message: T,

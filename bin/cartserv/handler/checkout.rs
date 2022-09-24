@@ -23,7 +23,7 @@ pub async fn handle<CR: TCartRepository, B: TBus>(
         .await
         .map_err(|e| {
             error!("Error while locking cart items: {e}");
-            Error::AddProductToCartError
+            Error::LockProductsInCartError
         })?;
     bus.clone()
         .publish_event(CreateOrderEvent {
@@ -36,4 +36,45 @@ pub async fn handle<CR: TCartRepository, B: TBus>(
         })?;
     info!("Order placed successfully {}", order_request_id);
     Ok((StatusCode::OK, String::from("Checkout successfull")))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::repository::cart::MockCartRepository;
+    use lib::{bus::MockTBus, enums::ROLES};
+    use migration::sea_orm::DbErr;
+    use serde_json::Value;
+    use std::sync::Arc;
+
+    #[tokio::test]
+    async fn test_checkout_failure_locking_cart_items() {
+        let user_id = 1;
+
+        let mut cart_repository = MockCartRepository::default();
+        cart_repository
+            .expect_lock_cart_items()
+            .return_const(Err(DbErr::Exec(format!("Error while locking cart items"))));
+
+        let claims = Claims::new(
+            String::from("test@test.com"),
+            user_id,
+            ROLES::ADMIN.to_string(),
+        );
+        let mut mock_bus = MockTBus::default();
+        mock_bus
+            .expect_publish_event()
+            .return_once_st(|_: CreateOrderEvent| Ok(()));
+        let bus = Extension(Arc::new(mock_bus));
+        let cart_repository_extension = Extension(cart_repository);
+        let result = handle(claims, cart_repository_extension, bus).await;
+        assert_eq!(result.is_err(), true);
+        let err = result.err().unwrap();
+        assert_eq!(err.0, StatusCode::INTERNAL_SERVER_ERROR);
+        let message = err.1.get("message").unwrap();
+        assert_eq!(
+            message,
+            &Value::String(Error::LockProductsInCartError.to_string())
+        );
+    }
 }
