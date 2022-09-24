@@ -1,12 +1,12 @@
+use crate::entity::cart;
 use migration::DbErr;
 use migration::Expr;
+use mockall::mock;
 use sea_orm::prelude::*;
 use sea_orm::DatabaseConnection;
 use sea_orm::Set;
 use std::sync::Arc;
 use uuid::Uuid;
-
-use crate::entity::cart;
 
 #[axum::async_trait]
 pub trait TCartRepository: Clone + Send + Sized + 'static {
@@ -49,6 +49,21 @@ impl TCartRepository for CartRepository {
             .exec(self.db_pool.as_ref())
             .await?;
         Ok(order_request_id)
+    }
+}
+
+mock! {
+    pub CartRepository {}
+
+    impl Clone for CartRepository {
+        fn clone(&self) -> Self;
+    }
+
+    #[axum::async_trait]
+    impl TCartRepository for CartRepository {
+        async fn add_product(&self, user_id: i32, product_id: i32) -> Result<(), DbErr>;
+        async fn get_cart_items(&self, user_id: i32) -> Result<Vec<i32>, DbErr>;
+        async fn lock_cart_items(&self, user_id: i32) -> Result<Uuid, DbErr>;
     }
 }
 

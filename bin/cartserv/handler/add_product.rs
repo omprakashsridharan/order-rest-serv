@@ -1,4 +1,4 @@
-use crate::repository::cart::{CartRepository, TCartRepository};
+use crate::repository::cart::TCartRepository;
 use axum::{Extension, Json};
 use hyper::StatusCode;
 use lib::{
@@ -24,8 +24,7 @@ pub async fn handle<C: TClient, CR: TCartRepository>(
     let product_details = clients
         .get_product_details(product_id)
         .await
-        .ok_or(Error::GetProductDetailsError)
-        .unwrap();
+        .ok_or(Error::GetProductDetailsError)?;
     info!("{} added to cart", product_details.name);
     cart_repository
         .add_product(user_id, product_id)
@@ -33,8 +32,7 @@ pub async fn handle<C: TClient, CR: TCartRepository>(
         .map_err(|e| {
             error!("Error while adding product to cart: {e}");
             Error::AddProductToCartError
-        })
-        .unwrap();
+        })?;
     Ok((
         StatusCode::CREATED,
         String::from("product added successfully"),
@@ -44,10 +42,8 @@ pub async fn handle<C: TClient, CR: TCartRepository>(
 #[cfg(test)]
 mod tests {
 
-    use std::sync::Arc;
-
     use super::*;
-    use crate::entity::cart;
+    use crate::repository::cart::MockCartRepository;
     use axum::{http::StatusCode, Extension, Json};
     use lib::clients::MockClient;
     use lib::{
@@ -55,23 +51,21 @@ mod tests {
         enums::ROLES,
         utils::jwt::Claims,
     };
-    use sea_orm::{DatabaseBackend, MockDatabase, MockExecResult};
+    use migration::DbErr;
     use serde_json::Value;
 
     #[tokio::test]
     async fn test_product_already_in_cart() {
         let user_id = 1;
         let product_id = 1;
-        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
-            .append_query_results(vec![vec![cart::Model {
-                user_id,
-                product_id,
-                ..Default::default()
-            }]])
-            .into_connection();
-        let cart_repository = CartRepository {
-            db_pool: Arc::new(db_pool),
-        };
+
+        let mut cart_repository = MockCartRepository::default();
+        cart_repository
+            .expect_add_product()
+            .return_const(Err(DbErr::Exec(format!(
+                "Product id {} already in cart for user id {}",
+                product_id, user_id
+            ))));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });
         let claims = Claims::new(
@@ -101,7 +95,7 @@ mod tests {
         let message = err.1.get("message").unwrap();
         assert_eq!(
             message,
-            &Value::String(Error::ProductAlreadyInCartError.to_string())
+            &Value::String(Error::AddProductToCartError.to_string())
         );
     }
 
@@ -109,16 +103,8 @@ mod tests {
     async fn test_get_product_details_error() {
         let user_id = 1;
         let product_id = 1;
-        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
-            .append_query_results::<cart::Model>(vec![vec![]])
-            .append_exec_results(vec![MockExecResult {
-                last_insert_id: 1,
-                rows_affected: 1,
-            }])
-            .into_connection();
-        let cart_repository = CartRepository {
-            db_pool: Arc::new(db_pool),
-        };
+        let mut cart_repository = MockCartRepository::default();
+        cart_repository.expect_add_product().return_const(Ok(()));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });
         let claims = Claims::new(
@@ -152,16 +138,8 @@ mod tests {
     async fn test_product_not_in_cart() {
         let user_id = 1;
         let product_id = 1;
-        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
-            .append_query_results::<cart::Model>(vec![vec![]])
-            .append_exec_results(vec![MockExecResult {
-                last_insert_id: 1,
-                rows_affected: 1,
-            }])
-            .into_connection();
-        let cart_repository = CartRepository {
-            db_pool: Arc::new(db_pool),
-        };
+        let mut cart_repository = MockCartRepository::default();
+        cart_repository.expect_add_product().return_const(Ok(()));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });
         let claims = Claims::new(
