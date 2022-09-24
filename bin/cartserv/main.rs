@@ -23,7 +23,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let clients = get_clients();
 
     let app = Router::new()
-        .route("/cart", post(add_product::handle::<ApiClient>))
+        .route(
+            "/cart",
+            post(add_product::handle::<ApiClient, CartRepository>),
+        )
         .layer(TraceLayer::new_for_http())
         .layer(Extension(cart_repository))
         .layer(Extension(clients));

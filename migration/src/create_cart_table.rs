@@ -10,13 +10,6 @@ impl MigrationTrait for Migration {
                 Table::create()
                     .table(Cart::Table)
                     .if_not_exists()
-                    .col(
-                        ColumnDef::new(Cart::Id)
-                            .integer()
-                            .not_null()
-                            .auto_increment()
-                            .primary_key(),
-                    )
                     .col(ColumnDef::new(Cart::UserId).integer().not_null())
                     .col(ColumnDef::new(Cart::ProductId).integer().not_null())
                     .col(ColumnDef::new(Cart::OrderRequestId).uuid().null())
@@ -34,6 +27,12 @@ impl MigrationTrait for Migration {
                                 "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP".to_string(),
                             ),
                     )
+                    .primary_key(
+                        Index::create()
+                            .name("pk_user_product")
+                            .col(Cart::UserId)
+                            .col(Cart::ProductId),
+                    )
                     .to_owned(),
             )
             .await
@@ -50,7 +49,6 @@ impl MigrationTrait for Migration {
 #[derive(Iden)]
 pub enum Cart {
     Table,
-    Id,
     UserId,
     ProductId,
     OrderRequestId,

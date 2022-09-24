@@ -32,8 +32,6 @@ pub enum Error {
     GetProductDetailsError,
     #[error("error while adding product to the cart")]
     AddProductToCartError,
-    #[error("Product is already in cart")]
-    ProductAlreadyInCartError,
 }
 pub type Result<T> = std::result::Result<T, Error>;
 

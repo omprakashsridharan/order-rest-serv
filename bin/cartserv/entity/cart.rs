@@ -6,9 +6,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize, Default)]
 #[sea_orm(table_name = "cart")]
 pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub user_id: i32,
+    #[sea_orm(primary_key, auto_increment = false)]
     pub product_id: i32,
     pub order_request_id: Option<Vec<u8>>,
     pub created_at: DateTime,
