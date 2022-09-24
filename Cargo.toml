@@ -52,6 +52,7 @@ axum-casbin-auth = "1.0.0"
 tower = "0.4.13"
 uuid = "1.1.2"
 serde_derive = "1.0.144"
+mockall = "0.11.2"
 
 [dependencies.sea-orm-migration]
 version = "^0.9.0"

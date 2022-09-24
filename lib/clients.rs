@@ -1,7 +1,7 @@
+use crate::dto::GetProductDetailsResponse;
+use mockall::mock;
 use serde_derive::Deserialize;
 use serde_derive::Serialize;
-
-use crate::dto::GetProductDetailsResponse;
 
 #[derive(Default, Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Product {
@@ -28,5 +28,18 @@ impl TClient for ApiClient {
             product_id,
             name: String::from("x"),
         })
+    }
+}
+
+mock! {
+    pub Client {}
+
+    impl Clone for Client {
+        fn clone(&self) -> Self;
+    }
+
+    #[axum::async_trait]
+    impl TClient for Client {
+        async fn get_product_details(&self, product_id: i32) -> Option<GetProductDetailsResponse>;
     }
 }
