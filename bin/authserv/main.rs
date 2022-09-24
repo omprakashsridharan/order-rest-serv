@@ -2,7 +2,7 @@ use axum::routing::post;
 use axum::{Extension, Router};
 use handler::{login, signup};
 use lib::{settings, utils::init::initialise};
-use migration::{AuthMigrator as Migrator, MigratorTrait};
+use migration::AuthMigrator as Migrator;
 use repository::auth::AuthRepository;
 use std::net::SocketAddr;
 use tower_http::trace::TraceLayer;
