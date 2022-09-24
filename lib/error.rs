@@ -34,6 +34,8 @@ pub enum Error {
     AddProductToCartError,
     #[error("error while locking products in cart")]
     LockProductsInCartError,
+    #[error("error while publishing event")]
+    PublishError,
 }
 pub type Result<T> = std::result::Result<T, Error>;
 
