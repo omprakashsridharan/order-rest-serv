@@ -7,7 +7,7 @@ use std::net::SocketAddr;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
-use crate::handler::add_product;
+use crate::handler::{add_product, checkout};
 use crate::repository::cart::CartRepository;
 
 mod entity;
@@ -23,6 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let clients = get_clients();
 
     let app = Router::new()
+        .route("/cart/checkout", post(checkout::handle::<CartRepository>))
         .route(
             "/cart",
             post(add_product::handle::<ApiClient, CartRepository>),
