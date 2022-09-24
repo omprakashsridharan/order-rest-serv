@@ -19,3 +19,6 @@ secret="secret"
 
 [gateway]
 port = 8000
+
+[rabbitmq]
+url="amgp://guest:guest@localhost:5672"

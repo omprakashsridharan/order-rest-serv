@@ -39,6 +39,11 @@ pub struct Cart {
 }
 
 #[derive(Debug, Deserialize, Clone)]
+pub struct RabbitMq {
+    pub url: String,
+}
+
+#[derive(Debug, Deserialize, Clone)]
 pub struct Settings {
     pub jwt: Jwt,
     pub gateway: Gateway,
@@ -47,6 +52,7 @@ pub struct Settings {
     pub order: Order,
     pub cart: Cart,
     pub env: ENV,
+    pub rabbitmq: RabbitMq,
 }
 
 #[derive(Clone, Debug, Deserialize)]
