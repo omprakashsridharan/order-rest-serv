@@ -24,7 +24,11 @@ pub async fn handle<C: TClient, CR: TCartRepository>(
     let product_details = clients
         .get_product_details(product_id)
         .await
-        .ok_or(Error::GetProductDetailsError)?;
+        .ok_or(Error::GetProductDetailsError)
+        .map_err(|e| {
+            error!("Error while getting product details: {e}");
+            e
+        })?;
     info!("{} added to cart", product_details.name);
     cart_repository
         .add_product(user_id, product_id)
@@ -55,7 +59,7 @@ mod tests {
     use serde_json::Value;
 
     #[tokio::test]
-    async fn test_product_already_in_cart() {
+    async fn test_add_product_already_in_cart() {
         let user_id = 1;
         let product_id = 1;
 
@@ -100,7 +104,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_get_product_details_error() {
+    async fn test_add_product_get_product_details_error() {
         let user_id = 1;
         let product_id = 1;
         let mut cart_repository = MockCartRepository::default();
@@ -135,7 +139,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_product_not_in_cart() {
+    async fn test_add_product_successful() {
         let user_id = 1;
         let product_id = 1;
         let mut cart_repository = MockCartRepository::default();
