@@ -43,12 +43,15 @@ impl TCartRepository for CartRepository {
 
     async fn lock_cart_items(&self, user_id: i32) -> Result<Uuid, DbErr> {
         let order_request_id = Uuid::new_v4();
-        cart::Entity::update_many()
+        let update_result = cart::Entity::update_many()
             .col_expr(cart::Column::OrderRequestId, Expr::value(order_request_id))
             .filter(cart::Column::UserId.eq(user_id))
             .exec(self.db_pool.as_ref())
             .await?;
-        Ok(order_request_id)
+        if update_result.rows_affected == 0 {
+            return Err(DbErr::Exec(String::from("No cart items to update")));
+        }
+        return Ok(order_request_id);
     }
 }
 
@@ -84,6 +87,36 @@ mod tests {
             db_pool: Arc::new(db_pool),
         };
         let result = cart_repository.add_product(1, 1).await;
+        assert_eq!(result.is_ok(), true);
+    }
+
+    #[tokio::test]
+    async fn test_lock_cart_items_empty() {
+        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
+            .append_exec_results(vec![MockExecResult {
+                rows_affected: 0,
+                ..Default::default()
+            }])
+            .into_connection();
+        let cart_repository = CartRepository {
+            db_pool: Arc::new(db_pool),
+        };
+        let result = cart_repository.lock_cart_items(1).await;
+        assert_eq!(result.is_err(), true);
+    }
+
+    #[tokio::test]
+    async fn test_lock_cart_items_success() {
+        let db_pool = MockDatabase::new(DatabaseBackend::MySql)
+            .append_exec_results(vec![MockExecResult {
+                rows_affected: 1,
+                ..Default::default()
+            }])
+            .into_connection();
+        let cart_repository = CartRepository {
+            db_pool: Arc::new(db_pool),
+        };
+        let result = cart_repository.lock_cart_items(1).await;
         assert_eq!(result.is_ok(), true);
     }
 }
