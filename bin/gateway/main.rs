@@ -5,14 +5,11 @@ use axum::{
     routing::get,
     Router,
 };
-use axum_casbin_auth::casbin::{CoreApi, Enforcer};
 use hyper::{client::HttpConnector, Body};
 use lib::settings;
 use lib::utils::jwt::Claims;
 use sea_orm_casbin_adapter::SeaOrmAdapter;
 use std::net::SocketAddr;
-use std::sync::Arc;
-use tokio::sync::RwLock;
 use tower_http::trace::TraceLayer;
 use tracing::info;
 
@@ -40,8 +37,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = SeaOrmAdapter::new(&settings::CONFIG.clone().auth.db_url, true)
         .await
         .expect("open db error");
-    let e = Enforcer::new("casbin/model.conf", db).await?;
-    let _casbin_auth_enforcer = Arc::new(RwLock::new(e));
 
     let app = Router::new()
         .route("/inventory", inventory_handler.clone())
