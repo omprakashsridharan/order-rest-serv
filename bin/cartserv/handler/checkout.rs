@@ -30,6 +30,7 @@ pub async fn handle<CR: TCartRepository, B: TBus>(
             order_request_id: order_request_id.to_string(),
             user_id,
         })
+        .await
         .map_err(|e| {
             error!("Error while publish CreateOrderEvent {}", e);
             Error::PublishError
@@ -42,7 +43,7 @@ pub async fn handle<CR: TCartRepository, B: TBus>(
 mod tests {
     use super::*;
     use crate::repository::cart::MockCartRepository;
-    use lib::{bus::MockTBus, enums::ROLES};
+    use lib::{bus::MockRabbitBus, enums::ROLES};
     use migration::sea_orm::DbErr;
     use serde_json::Value;
     use std::sync::Arc;
@@ -61,7 +62,7 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let mut mock_bus = MockTBus::default();
+        let mut mock_bus = MockRabbitBus::default();
         mock_bus
             .expect_publish_event()
             .return_once_st(|_: CreateOrderEvent| Ok(()));
@@ -92,7 +93,7 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let mut mock_bus = MockTBus::default();
+        let mut mock_bus = MockRabbitBus::default();
         mock_bus
             .expect_publish_event()
             .return_once_st(|_: CreateOrderEvent| Err(Box::new(Error::PublishError)));
@@ -120,7 +121,7 @@ mod tests {
             user_id,
             ROLES::ADMIN.to_string(),
         );
-        let mut mock_bus = MockTBus::default();
+        let mut mock_bus = MockRabbitBus::default();
         mock_bus
             .expect_publish_event()
             .return_once_st(|_: CreateOrderEvent| Ok(()));

@@ -1,9 +1,8 @@
 use axum::{routing::post, Extension, Router};
-use lib::bus::get_bus;
+use lib::bus::{get_bus, RabbitBus};
 
 use crate::handler::{add_product, checkout};
 use crate::repository::cart::CartRepository;
-use crosstown_bus::Bus;
 use lib::clients::ApiClient;
 use lib::{clients::get_clients, settings, utils::init::initialise};
 use migration::CartMigrator as Migrator;
@@ -22,12 +21,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         db_pool: db_pool.clone(),
     };
     let clients = get_clients();
-    let bus = get_bus(settings::CONFIG.clone().rabbitmq.url.clone());
+    let bus = get_bus(settings::CONFIG.clone().rabbitmq.url.clone()).await;
 
     let app = Router::new()
         .route(
             "/cart/checkout",
-            post(checkout::handle::<CartRepository, Bus>),
+            post(checkout::handle::<CartRepository, RabbitBus>),
         )
         .route(
             "/cart",
