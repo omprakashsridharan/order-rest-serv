@@ -1,16 +1,16 @@
 version: '3.9'
 services:
-  authdb:
+  orderservdb:
     image: mysql/mysql-server:8.0.23
     command: --default-authentication-plugin=mysql_native_password
     restart: unless-stopped
     env_file: ./.env
-    container_name: authdb
+    container_name: orderservdb
     environment:
-      MYSQL_DATABASE: $AUTH_DB_NAME
-      MYSQL_USER: $AUTH_DB_USER
-      MYSQL_PASSWORD: $AUTH_DB_PASSWORD
-      MYSQL_ROOT_PASSWORD: $AUTH_DB_ROOT_PASSWORD
+      MYSQL_DATABASE: $DB_NAME
+      MYSQL_USER: $DB_USER
+      MYSQL_PASSWORD: $DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
       MYSQL_ROOT_HOST: "%"
       RUN_MODE: "Production"
     ports:
@@ -18,184 +18,41 @@ services:
     expose:
       - 3306
     volumes:
-      - auth-db:/var/lib/mysql
-
-  inventorydb:
-    image: mysql/mysql-server:8.0.23
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
-    env_file: ./.env
-    container_name: inventorydb
-    environment:
-      MYSQL_DATABASE: $INVENTORY_DB_NAME
-      MYSQL_USER: $INVENTORY_DB_USER
-      MYSQL_PASSWORD: $INVENTORY_DB_PASSWORD
-      MYSQL_ROOT_PASSWORD: $INVENTORY_DB_ROOT_PASSWORD
-      MYSQL_ROOT_HOST: "%"
-      RUN_MODE: "Production"
-    ports:
-      - 3308:3306
-    expose:
-      - 3306
-    volumes:
-      - inventory-db:/var/lib/mysql
-
-  orderdb:
-    image: mysql/mysql-server:8.0.23
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
-    env_file: ./.env
-    container_name: orderdb
-    environment:
-      MYSQL_DATABASE: $ORDER_DB_NAME
-      MYSQL_USER: $ORDER_DB_USER
-      MYSQL_PASSWORD: $ORDER_DB_PASSWORD
-      MYSQL_ROOT_PASSWORD: $ORDER_DB_ROOT_PASSWORD
-      MYSQL_ROOT_HOST: "%"
-      RUN_MODE: "Production"
-    ports:
-      - 3309:3306
-    expose:
-      - 3306
-    volumes:
-      - order-db:/var/lib/mysql
-
-  cartdb:
-    image: mysql/mysql-server:8.0.23
-    command: --default-authentication-plugin=mysql_native_password
-    restart: unless-stopped
-    env_file: ./.env
-    container_name: cartdb
-    environment:
-      MYSQL_DATABASE: $CART_DB_NAME
-      MYSQL_USER: $CART_DB_USER
-      MYSQL_PASSWORD: $CART_DB_PASSWORD
-      MYSQL_ROOT_PASSWORD: $CART_DB_ROOT_PASSWORD
-      MYSQL_ROOT_HOST: "%"
-      RUN_MODE: "Production"
-    ports:
-      - 3310:3306
-    expose:
-      - 3306
-    volumes:
-      - cart-db:/var/lib/mysql
-
-  authserv:
-    image: authserv
-    container_name: authserv
-    build:
-      context: .
-      dockerfile: ./authserv.Dockerfile
-    depends_on:
-      - authdb
-    restart: on-failure
-    env_file: ./.env
-    command: sh -c "/usr/local/bin/wait && /usr/local/bin/authserv"
-    ports:
-      - 8001:80
-    expose:
-      - 8001
-    environment:
-      - RUN_MODE=Production
-      - WAIT_HOSTS=authdb:3306
-      - WAIT_HOSTS_TIMEOUT=300
-      - WAIT_SLEEP_INTERVAL=30
-      - WAIT_HOST_CONNECT_TIMEOUT=30
-    stdin_open: true
-    tty: true
-
-  inventoryserv:
-    image: inventoryserv
-    container_name: inventoryserv
-    build:
-      context: .
-      dockerfile: ./inventoryserv.Dockerfile
-    depends_on:
-      - inventorydb
-    restart: on-failure
-    env_file: ./.env
-    command: sh -c "/usr/local/bin/wait && /usr/local/bin/inventoryserv"
-    ports:
-      - 8002:80
-    expose:
-      - 8002
-    environment:
-      - RUN_MODE=Production
-      - WAIT_HOSTS=inventorydb:3306
-      - WAIT_HOSTS_TIMEOUT=300
-      - WAIT_SLEEP_INTERVAL=30
-      - WAIT_HOST_CONNECT_TIMEOUT=30
-    stdin_open: true
-    tty: true
+      - orderservdb:/var/lib/mysql
 
   orderserv:
     image: orderserv
     container_name: orderserv
     build:
       context: .
-      dockerfile: ./orderserv.Dockerfile
+      dockerfile: ./Dockerfile
     depends_on:
-      - orderdb
+      - orderservdb
     restart: on-failure
     env_file: ./.env
     command: sh -c "/usr/local/bin/wait && /usr/local/bin/orderserv"
     ports:
-      - 8003:80
-    expose:
-      - 8003
-    environment:
-      - RUN_MODE=Production
-      - WAIT_HOSTS=orderdb:3306
-      - WAIT_HOSTS_TIMEOUT=300
-      - WAIT_SLEEP_INTERVAL=30
-      - WAIT_HOST_CONNECT_TIMEOUT=30
-    stdin_open: true
-    tty: true
-
-  cartserv:
-    image: cartserv
-    container_name: cartserv
-    build:
-      context: .
-      dockerfile: ./cartserv.Dockerfile
-    depends_on:
-      - cartdb
-    restart: on-failure
-    env_file: ./.env
-    command: sh -c "/usr/local/bin/wait && /usr/local/bin/cartserv"
-    ports:
-      - 8004:80
-    expose:
-      - 8004
-    environment:
-      - RUN_MODE=Production
-      - WAIT_HOSTS=cartdb:3306
-      - WAIT_HOSTS_TIMEOUT=300
-      - WAIT_SLEEP_INTERVAL=30
-      - WAIT_HOST_CONNECT_TIMEOUT=30
-    stdin_open: true
-    tty: true
-
-  gateway:
-    depends_on:
-      - authserv
-    image: gateway
-    container_name: gateway
-    build:
-      context: .
-      dockerfile: ./gateway.Dockerfile
-    restart: on-failure
-    env_file: ./.env
-    environment:
-      - RUN_MODE=Production
-    ports:
-      - 8000:80
+      - 8080:80
     expose:
       - 80
+    environment:
+      - RUN_MODE=Production
+      - WAIT_HOSTS=orderservdb:3306, rabbitmq:5672
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
     stdin_open: true
     tty: true
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
+    volumes:
+        - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+        - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+
 volumes:
-  auth-db:
-  inventory-db:
-  order-db:
-  cart-db:
+  orderservdb:

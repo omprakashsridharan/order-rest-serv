@@ -1,0 +1,11 @@
+[jwt]
+secret = "secret"
+
+[rabbitmq]
+url = "amqp://guest:guest@rabbitmq:5672"
+
+[db]
+url = "mysql://orderserv:password@orderservdb:3306/orderserv"
+
+[service]
+port = 8080

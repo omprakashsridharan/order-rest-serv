@@ -3,30 +3,6 @@ name = "orderserv"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-name = "lib"
-path = "./lib/lib.rs"
-
-[[bin]]
-name = "gateway"
-path = "./bin/gateway/main.rs"
-
-[[bin]]
-name = "authserv"
-path = "./bin/authserv/main.rs"
-
-[[bin]]
-name = "inventoryserv"
-path = "./bin/inventoryserv/main.rs"
-
-[[bin]]
-name = "orderserv"
-path = "./bin/orderserv/main.rs"
-
-[[bin]]
-name = "cartserv"
-path = "bin/cartserv/main.rs"
-
 [dependencies]
 axum = { version = "0.5.13", features = ["headers"] }
 hyper = { version = "0.14", features = ["full"] }
