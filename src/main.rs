@@ -55,7 +55,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(TraceLayer::new_for_http());
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().service.port));
-    info!("auth serv listening on {}", addr);
+    info!("order serv listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
