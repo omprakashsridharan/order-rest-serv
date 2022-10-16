@@ -7,7 +7,6 @@ use tracing::info;
 pub async fn initialise<M: MigratorTrait>(
     db_url: String,
 ) -> Result<Arc<DatabaseConnection>, Box<dyn std::error::Error>> {
-    dotenv::dotenv().ok();
     tracing_subscriber::fmt::init();
     info!("DB url {}", db_url);
     let connection = get_connection(db_url).await?.clone();

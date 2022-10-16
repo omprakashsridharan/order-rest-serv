@@ -1,2 +1,2 @@
 target
-lib/config/Local.toml
+.env
