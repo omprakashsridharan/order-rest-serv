@@ -8,8 +8,10 @@ pub async fn initialise<M: MigratorTrait>(
     db_url: String,
 ) -> Result<Arc<DatabaseConnection>, Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
-    info!("DB url {}", db_url);
+
     let connection = get_connection(db_url).await?.clone();
+    info!("Establishing DB connection");
     <M as MigratorTrait>::up(&connection, None).await?;
+    info!("DB Migration complete");
     Ok(connection)
 }
