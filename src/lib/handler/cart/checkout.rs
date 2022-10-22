@@ -1,5 +1,5 @@
-use crate::lib::repository::cart::TCartRepository;
-use crate::lib::{
+use crate::repository::cart::TCartRepository;
+use crate::{
     bus::TBus,
     error::{ApiResult, Error},
     events::CreateOrderEvent,
@@ -42,8 +42,8 @@ pub async fn handle<CR: TCartRepository, B: TBus>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lib::repository::cart::MockCartRepository;
-    use crate::lib::{bus::MockRabbitBus, enums::ROLES};
+    use crate::repository::cart::MockCartRepository;
+    use crate::{bus::MockRabbitBus, enums::ROLES};
     use migration::sea_orm::DbErr;
     use serde_json::Value;
     use std::sync::Arc;

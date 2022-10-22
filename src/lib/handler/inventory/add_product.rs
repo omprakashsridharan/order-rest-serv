@@ -1,6 +1,6 @@
 use axum::{Extension, Json};
 
-use crate::lib::{
+use crate::{
     dto::AddProductData,
     error::{ApiResult, Error},
     repository::product::TProductRepository,

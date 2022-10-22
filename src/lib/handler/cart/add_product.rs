@@ -1,6 +1,6 @@
-use crate::lib::repository::cart::TCartRepository;
-use crate::lib::repository::product::TProductRepository;
-use crate::lib::{
+use crate::repository::cart::TCartRepository;
+use crate::repository::product::TProductRepository;
+use crate::{
     dto::AddCartProductData,
     error::{ApiResult, Error},
     utils::jwt::{validate_payload, Claims},
@@ -46,10 +46,10 @@ pub async fn handle<CR: TCartRepository, PR: TProductRepository>(
 mod tests {
 
     use super::*;
-    use crate::lib::entity::product;
-    use crate::lib::repository::cart::MockCartRepository;
-    use crate::lib::repository::product::MockProductRepository;
-    use crate::lib::{dto::AddCartProductData, enums::ROLES, utils::jwt::Claims};
+    use crate::entity::product;
+    use crate::repository::cart::MockCartRepository;
+    use crate::repository::product::MockProductRepository;
+    use crate::{dto::AddCartProductData, enums::ROLES, utils::jwt::Claims};
     use axum::{http::StatusCode, Extension, Json};
     use migration::DbErr;
     use serde_json::Value;

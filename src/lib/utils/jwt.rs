@@ -1,8 +1,6 @@
-use std::str::FromStr;
-
-use crate::lib::enums::ROLES;
-use crate::lib::error::Result as ErrorResult;
-use crate::lib::settings;
+use crate::enums::ROLES;
+use crate::error::Result as ErrorResult;
+use crate::settings;
 use async_trait::async_trait;
 use axum::extract::{FromRequest, RequestParts, TypedHeader};
 use axum::headers::{authorization::Bearer, Authorization};
@@ -13,6 +11,7 @@ use chrono::{Duration, Utc};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::str::FromStr;
 use validator::Validate;
 
 pub fn validate_payload<T: Validate>(payload: &T) -> ErrorResult<()> {

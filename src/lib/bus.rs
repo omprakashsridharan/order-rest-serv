@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 type PublishResult = Result<(), Box<dyn Error>>;
 
-pub async fn get_bus(rebbitmq_url: String) -> Arc<RabbitBus> {
+pub async fn get_bus(rebbitmq_url: String) -> Arc<impl TBus> {
     let bus = RabbitBus::new(rebbitmq_url)
         .await
         .expect("Unable to establish bus connection");

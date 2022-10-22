@@ -1,9 +1,9 @@
-use crate::lib::entity::user::{
+use crate::entity::user::{
     ActiveModel as UserModel, Column as UserColumn, Entity as UserEntity, Model,
 };
 
-use crate::lib::db::connection::{DatabaseConnection, DbErr};
-use crate::lib::enums::ROLES;
+use crate::db::connection::{DatabaseConnection, DbErr};
+use crate::enums::ROLES;
 use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, ColumnTrait, EntityTrait, QueryFilter};
 use std::sync::Arc;
