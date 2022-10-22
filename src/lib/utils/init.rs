@@ -12,6 +12,5 @@ pub async fn initialise<M: MigratorTrait>(
     let connection = get_connection(db_url).await?.clone();
     info!("Establishing DB connection");
     <M as MigratorTrait>::up(&connection, None).await?;
-    info!("DB Migration complete");
     Ok(connection)
 }
