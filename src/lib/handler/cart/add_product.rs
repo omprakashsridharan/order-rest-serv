@@ -75,7 +75,8 @@ mod tests {
                 name: String::from("x"),
                 description: "".to_string(),
                 price: 0.0,
-                ..Default::default()
+                created_at: chrono::offset::Local::now().naive_local(),
+                updated_at: chrono::offset::Local::now().naive_local(),
             }));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });
@@ -155,7 +156,8 @@ mod tests {
                 name: String::from("x"),
                 description: "".to_string(),
                 price: 0.0,
-                ..Default::default()
+                created_at: chrono::offset::Local::now().naive_local(),
+                updated_at: chrono::offset::Local::now().naive_local(),
             }));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });
