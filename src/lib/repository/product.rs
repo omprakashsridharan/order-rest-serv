@@ -1,6 +1,6 @@
-use crate::lib::db::connection::{DatabaseConnection, DbErr};
-use crate::lib::db::prelude::*;
-use crate::lib::entity::product;
+use crate::db::connection::{DatabaseConnection, DbErr};
+use crate::db::prelude::*;
+use crate::entity::product;
 use mockall::mock;
 use std::sync::Arc;
 use tracing::info;

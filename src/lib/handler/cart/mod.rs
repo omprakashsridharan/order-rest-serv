@@ -1,6 +1,6 @@
 use axum::{routing::post, Router};
 
-use crate::lib::{
+use crate::{
     bus::RabbitBus,
     repository::{cart::CartRepository, product::ProductRepository},
 };

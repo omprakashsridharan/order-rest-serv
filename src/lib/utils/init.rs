@@ -1,4 +1,4 @@
-use crate::lib::db::connection::get_connection;
+use crate::db::connection::get_connection;
 use sea_orm::DatabaseConnection;
 use sea_orm_migration::MigratorTrait;
 use std::sync::Arc;

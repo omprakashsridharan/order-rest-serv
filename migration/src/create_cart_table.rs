@@ -23,9 +23,7 @@ impl MigrationTrait for Migration {
                         ColumnDef::new(Cart::UpdatedAt)
                             .not_null()
                             .date_time()
-                            .extra(
-                                "DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP".to_string(),
-                            ),
+                            .extra("DEFAULT CURRENT_TIMESTAMP".to_string()),
                     )
                     .primary_key(
                         Index::create()

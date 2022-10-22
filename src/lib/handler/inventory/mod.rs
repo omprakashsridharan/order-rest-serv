@@ -1,6 +1,6 @@
 use axum::{routing::post, Router};
 
-use crate::lib::repository::product::ProductRepository;
+use crate::repository::product::ProductRepository;
 
 pub mod add_product;
 

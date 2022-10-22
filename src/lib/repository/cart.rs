@@ -1,4 +1,4 @@
-use crate::lib::entity::cart;
+use crate::entity::cart;
 use migration::DbErr;
 use migration::Expr;
 use mockall::mock;
