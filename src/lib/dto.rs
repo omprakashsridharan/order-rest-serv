@@ -18,10 +18,15 @@ pub struct TokenPayload {
 pub struct RegisterInput {
     #[validate(email)]
     pub email: String,
+
     #[validate(length(min = 6))]
     pub password: String,
-    pub address: String,
-    pub phone: String,
+
+    #[validate(required)]
+    pub address: Option<String>,
+
+    #[validate(required)]
+    pub phone: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Validate)]

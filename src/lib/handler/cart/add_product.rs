@@ -75,6 +75,7 @@ mod tests {
                 name: String::from("x"),
                 description: "".to_string(),
                 price: 0.0,
+                ..Default::default()
             }));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });
@@ -154,6 +155,7 @@ mod tests {
                 name: String::from("x"),
                 description: "".to_string(),
                 price: 0.0,
+                ..Default::default()
             }));
 
         let add_cart_product_data = Json(AddCartProductData { product_id });

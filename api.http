@@ -1,0 +1,31 @@
+POST http://localhost:8080/auth/signup HTTP/1.1
+content-type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "123456",
+    "address":"abc",
+    "phone":"123456789"
+}
+
+###
+
+POST http://localhost:8080/auth/login HTTP/1.1
+content-type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "123456"
+}
+
+###
+
+POST http://localhost:8080/inventory HTTP/1.1
+content-type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWJqZWN0IjoidGVzdEB0ZXN0LmNvbSIsImV4cCI6MTY2NjUxODQ1MiwiaWF0IjoxNjY2NDMyMDUyLCJ1c2VyX2lkIjoyLCJyb2xlIjoiVVNFUiJ9.C3DMz-u27s7bN2H4YP_G2cM2X6wwgNdMN5lpN6DM1sg
+
+{
+  "name":"P1",
+  "description":"Product 1",
+  "price": 10
+}

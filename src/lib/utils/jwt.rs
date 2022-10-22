@@ -1,8 +1,8 @@
 use std::str::FromStr;
 
-use crate::lib::constants::JWT_SECRET;
 use crate::lib::enums::ROLES;
 use crate::lib::error::Result as ErrorResult;
+use crate::lib::settings;
 use async_trait::async_trait;
 use axum::extract::{FromRequest, RequestParts, TypedHeader};
 use axum::headers::{authorization::Bearer, Authorization};
@@ -43,17 +43,19 @@ impl Claims {
 }
 
 pub fn sign(email: String, user_id: i32, role: String) -> ErrorResult<String> {
+    let jwt_secret = settings::CONFIG.clone().jwt.secret;
     Ok(jsonwebtoken::encode(
         &Header::default(),
         &Claims::new(email, user_id, role),
-        &EncodingKey::from_secret(JWT_SECRET.as_bytes()),
+        &EncodingKey::from_secret(jwt_secret.as_bytes()),
     )?)
 }
 
 pub fn verify(token: &str) -> ErrorResult<Claims> {
+    let jwt_secret = settings::CONFIG.clone().jwt.secret;
     Ok(jsonwebtoken::decode(
         token,
-        &DecodingKey::from_secret(JWT_SECRET.as_bytes()),
+        &DecodingKey::from_secret(jwt_secret.as_bytes()),
         &Validation::default(),
     )
     .map(|data| data.claims)?)

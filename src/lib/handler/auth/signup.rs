@@ -15,7 +15,12 @@ pub async fn handle(
 ) -> ApiResult<(StatusCode, Json<TokenPayload>)> {
     validate_payload(&input)?;
     let user_model = auth_repository
-        .signup(input.email, input.password, input.address, input.phone)
+        .signup(
+            input.email,
+            input.password,
+            input.address.unwrap(),
+            input.phone.unwrap(),
+        )
         .await
         .map_err(|e| {
             error!("Error while signing up {}", e);

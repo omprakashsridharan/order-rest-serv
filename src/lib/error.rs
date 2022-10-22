@@ -1,6 +1,7 @@
 use axum::{http::StatusCode, Json};
 use serde_json::{json, Value};
 use thiserror::Error;
+use tracing::log::error;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -49,7 +50,10 @@ impl From<Error> for ApiError {
             Error::ValidationError(_) => StatusCode::BAD_REQUEST,
             _ => StatusCode::INTERNAL_SERVER_ERROR,
         };
-        let payload = json!({"message": err.to_string()});
+        let payload = match err {
+            Error::ValidationError(ve) => json!(ve.errors()),
+            _ => json!({"message": err.to_string()}),
+        };
         (status, Json(payload))
     }
 }
