@@ -4,8 +4,12 @@ use lib::{
     settings::{Db, Jwt, RabbitMq, Service, Settings},
 };
 use std::net::{SocketAddr, TcpListener};
+use testcontainers::{clients, images::rabbitmq};
 
-pub fn get_settings() -> Settings {
+fn initialise_settings() -> Settings {
+    let docker = clients::Cli::default();
+    let rabbit_node = docker.run(rabbitmq::RabbitMq::default());
+    let amqp_url = format!("amqp://127.0.0.1:{}", rabbit_node.get_host_port_ipv4(5672));
     Settings {
         db: Db {
             url: String::from("sqlite::memory:"),
@@ -14,7 +18,7 @@ pub fn get_settings() -> Settings {
             secret: "secret".to_string(),
         },
         rabbitmq: RabbitMq {
-            url: String::from("amqp://guest:guest@localhost:5672"),
+            url: "amqp://127.0.0.1:15671".to_string(),
         },
         service: Service { port: 8080 },
     }
@@ -22,7 +26,7 @@ pub fn get_settings() -> Settings {
 
 #[tokio::test]
 async fn test_signup() {
-    let settings = get_settings();
+    let settings = initialise_settings();
     let listener = TcpListener::bind(
         format!("127.0.0.1:{}", settings.clone().service.port)
             .parse::<SocketAddr>()
