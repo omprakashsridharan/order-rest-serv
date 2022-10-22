@@ -3,12 +3,12 @@ extern crate lazy_static;
 
 mod lib;
 
-use axum::routing::post;
+use crate::lib::handler::auth::routes as auth_routes;
+use crate::lib::handler::cart::routes as cart_routes;
+use crate::lib::handler::inventory::routes as inventory_routes;
 use axum::{extract::Extension, middleware::from_extractor, Router};
-use lib::bus::{get_bus, RabbitBus};
-use lib::handler::auth::{login, signup};
-use lib::handler::cart::{add_product as add_product_cart, checkout};
-use lib::handler::inventory::add_product as add_product_inventory;
+use axum_extra::routing::SpaRouter;
+use lib::bus::get_bus;
 use lib::repository::auth::AuthRepository;
 use lib::repository::cart::CartRepository;
 use lib::repository::product::ProductRepository;
@@ -32,30 +32,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let bus = get_bus(settings::CONFIG.clone().rabbitmq.url.clone()).await;
 
-    let app = Router::new()
-        .route(
-            "/cart/checkout",
-            post(checkout::handle::<CartRepository, RabbitBus>),
-        )
-        .route(
-            "/cart",
-            post(add_product_cart::handle::<CartRepository, ProductRepository>),
-        )
-        .route(
-            "/inventory",
-            post(add_product_inventory::handle::<ProductRepository>),
-        )
+    let api_router = Router::new()
+        .nest("/cart", cart_routes())
+        .nest("/inventory", inventory_routes())
         .layer(from_extractor::<Claims>())
-        .route("/auth/login", post(login::handle))
-        .route("/auth/signup", post(signup::handle))
+        .nest("/auth", auth_routes())
         .layer(Extension(cart_repository))
         .layer(Extension(auth_repository))
         .layer(Extension(product_repository))
         .layer(Extension(bus))
         .layer(TraceLayer::new_for_http());
+    let app = Router::new()
+        .merge(SpaRouter::new("/assets", "build"))
+        .nest("/api", api_router);
 
     let addr = SocketAddr::from(([0, 0, 0, 0], settings::CONFIG.clone().service.port));
-    info!("auth serv listening on {}", addr);
+    info!("order serv listening on {}", addr);
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
