@@ -1,15 +1,13 @@
 use axum::{body::Body, http::Request};
+use hyper::{Method, StatusCode};
 use lib::{
     get_app,
     settings::{Db, Jwt, RabbitMq, Service, Settings},
 };
+use serde_json::json;
 use std::net::{SocketAddr, TcpListener};
-use testcontainers::{clients, images::rabbitmq};
 
 fn initialise_settings() -> Settings {
-    let docker = clients::Cli::default();
-    let rabbit_node = docker.run(rabbitmq::RabbitMq::default());
-    let amqp_url = format!("amqp://127.0.0.1:{}", rabbit_node.get_host_port_ipv4(5672));
     Settings {
         db: Db {
             url: String::from("sqlite::memory:"),
@@ -18,7 +16,7 @@ fn initialise_settings() -> Settings {
             secret: "secret".to_string(),
         },
         rabbitmq: RabbitMq {
-            url: "amqp://127.0.0.1:15671".to_string(),
+            url: "amqp://127.0.0.1:5672".to_string(),
         },
         service: Service { port: 8080 },
     }
@@ -49,13 +47,21 @@ async fn test_signup() {
     let response = client
         .request(
             Request::builder()
-                .uri(format!("http://{}", addr))
-                .body(Body::empty())
+                .method(Method::POST)
+                .uri(format!("http://{}/api/auth/signup", addr))
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    json!({
+                        "email": "test@test.com",
+                        "password": "123456",
+                        "address":"abc",
+                        "phone":"123456789"
+                    })
+                    .to_string(),
+                ))
                 .unwrap(),
         )
         .await
         .unwrap();
-
-    let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-    assert_eq!(&body[..], b"Hello, World!");
+    assert_eq!(response.status(), StatusCode::CREATED);
 }
