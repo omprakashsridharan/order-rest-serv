@@ -52,7 +52,6 @@ lapin = "2.1.1"
 tokio-executor-trait = "2.1.0"
 tokio-reactor-trait = "1.1.0"
 axum-extra = { version = "0.3.7", features = ["spa"] }
-testcontainers = { version = "0.14.0", features = ["tokio"] }
 
 [dependencies.sea-orm-migration]
 version = "^0.9.0"

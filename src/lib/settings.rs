@@ -28,18 +28,19 @@ pub struct Settings {
     pub rabbitmq: RabbitMq,
 }
 
-impl Settings {
-    pub fn new() -> Result<Self, ConfigError> {
+pub fn init(filename_option: Option<&str>) -> Result<Settings, ConfigError> {
+    if let Some(filename) = filename_option {
+        dotenv::from_filename(filename).ok();
+    } else {
         dotenv::dotenv().ok();
-
-        let s = Config::builder()
-            // .add_source(file)
-            .add_source(Environment::default())
-            .build()?;
-        s.try_deserialize()
     }
+
+    let s = Config::builder()
+        .add_source(Environment::default())
+        .build()?;
+    s.try_deserialize()
 }
 
 lazy_static! {
-    pub static ref CONFIG: Settings = Settings::new().expect("config can be loaded");
+    pub static ref CONFIG: Settings = init(None).expect("config can be loaded");
 }
