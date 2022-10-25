@@ -158,13 +158,6 @@ impl RabbitBus {
                 FieldTable::default(),
             )
             .await?;
-        let queue = channel
-            .queue_declare(
-                &event_name,
-                QueueDeclareOptions::default(),
-                FieldTable::default(),
-            )
-            .await?;
         info!(?queue, "Declared queue");
         let _publish_confirmation = channel
             .basic_publish(
