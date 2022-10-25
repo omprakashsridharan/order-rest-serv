@@ -1,8 +1,10 @@
 use axum::{body::Body, http::Request};
+use hyper::{Method, StatusCode};
 use lib::{
     get_app,
     settings::{self, Settings},
 };
+use serde_json::json;
 use std::net::{SocketAddr, TcpListener};
 
 fn initialise_settings() -> Settings {
@@ -35,13 +37,21 @@ async fn test_signup() {
     let response = client
         .request(
             Request::builder()
-                .uri(format!("http://{}", addr))
-                .body(Body::empty())
+                .method(Method::POST)
+                .uri(format!("http://{}/api/auth/signup", addr))
+                .header("content-type", "application/json")
+                .body(Body::from(
+                    json!({
+                        "email": "test@test.com",
+                        "password": "123456",
+                        "address":"abc",
+                        "phone":"123456789"
+                    })
+                    .to_string(),
+                ))
                 .unwrap(),
         )
         .await
         .unwrap();
-
-    let body = hyper::body::to_bytes(response.into_body()).await.unwrap();
-    assert_eq!(&body[..], b"Hello, World!");
+    assert_eq!(response.status(), StatusCode::CREATED);
 }

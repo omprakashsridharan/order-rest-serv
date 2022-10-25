@@ -46,6 +46,7 @@ impl TCartRepository for CartRepository {
         let update_result = cart::Entity::update_many()
             .col_expr(cart::Column::OrderRequestId, Expr::value(order_request_id))
             .filter(cart::Column::UserId.eq(user_id))
+            .filter(cart::Column::OrderRequestId.is_null())
             .exec(self.db_pool.as_ref())
             .await?;
         if update_result.rows_affected == 0 {

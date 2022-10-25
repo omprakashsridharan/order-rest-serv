@@ -11,11 +11,11 @@ pub mod checkout;
 pub fn routes() -> Router {
     Router::new()
         .route(
-            "/",
-            post(add_product::handle::<CartRepository, ProductRepository>),
-        )
-        .route(
             "/checkout",
             post(checkout::handle::<CartRepository, RabbitBus>),
+        )
+        .route(
+            "/",
+            post(add_product::handle::<CartRepository, ProductRepository>),
         )
 }

@@ -1,8 +1,10 @@
 use borsh::{BorshDeserialize, BorshSerialize};
+use lapin::types::FieldTable;
 use lapin::{options::*, BasicProperties, Connection, ConnectionProperties, Result as LapinResult};
 use mockall::mock;
 use std::error::Error;
 use std::sync::Arc;
+use tracing::info;
 
 type PublishResult = Result<(), Box<dyn Error>>;
 
@@ -148,19 +150,33 @@ impl RabbitBus {
         let event_name = get_event_name::<T>();
         let mut buffer = Vec::new();
         message.serialize(&mut buffer)?;
-        let channel = self.connection.create_channel().await.unwrap();
-        let _publish_result = channel
-            .basic_publish(
+        let channel = self.connection.create_channel().await?;
+        let queue = channel
+            .queue_declare(
                 &event_name,
+                QueueDeclareOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
+        let queue = channel
+            .queue_declare(
+                &event_name,
+                QueueDeclareOptions::default(),
+                FieldTable::default(),
+            )
+            .await?;
+        info!(?queue, "Declared queue");
+        let _publish_confirmation = channel
+            .basic_publish(
+                "",
                 &event_name,
                 BasicPublishOptions::default(),
                 &buffer,
                 BasicProperties::default(),
             )
-            .await
-            .unwrap()
-            .await
-            .unwrap();
+            .await?
+            .await?;
+        info!("published message to {}", event_name);
         Ok(())
     }
 }
